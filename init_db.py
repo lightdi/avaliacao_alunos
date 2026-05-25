@@ -247,8 +247,16 @@ PONTOS_MELHORIA = [
     "Os critérios de correção das atividades poderiam ser mais detalhados e transparentes."
 ]
 
-def init_db():
-    conn = sqlite3.connect('database.db')
+def init_db(db_path=None):
+    import os
+    if not db_path:
+        db_path = os.environ.get('DATABASE_PATH', 'database.db')
+        
+    parent_dir = os.path.dirname(db_path)
+    if parent_dir and not os.path.exists(parent_dir):
+        os.makedirs(parent_dir, exist_ok=True)
+        
+    conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
     
     # Enable foreign keys

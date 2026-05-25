@@ -12,13 +12,15 @@ services:
       - FLASK_DEBUG=False
       # Define o subcaminho para o Flask gerar as rotas internas e assets corretamente
       - APPLICATION_ROOT=/avaliacoes
+      # Define o caminho do banco de dados dentro do volume de dados persistente
+      - DATABASE_PATH=/app/data/database.db
 
     ports:
       - "8020:8020"
 
     volumes:
-      # Monta o banco de dados SQLite diretamente para persistir as avaliações no host
-      - ./database.db:/app/database.db
+      # Monta o diretorio de dados para persistir o banco de dados no host com seguranca (evita erros do Portainer)
+      - ./data:/app/data
 
     networks:
       - proxy

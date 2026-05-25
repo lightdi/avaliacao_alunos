@@ -35,8 +35,25 @@ class PrefixMiddleware(object):
 
 app.wsgi_app = PrefixMiddleware(app.wsgi_app, prefix=os.environ.get('APPLICATION_ROOT', ''))
 
-# Locate database.db reliably
-DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'database.db')
+# Locate database.db reliably (supports env database path)
+DB_PATH = os.environ.get('DATABASE_PATH', os.path.join(os.path.dirname(os.path.abspath(__file__)), 'database.db'))
+
+# Inicializa o banco de dados de forma resiliente se ele não existir
+if not os.path.exists(DB_PATH):
+    print(f"Banco de dados nao localizado em {DB_PATH}. Inicializando...")
+    try:
+        db_dir = os.path.dirname(DB_PATH)
+        if db_dir and not os.path.exists(db_dir):
+            os.makedirs(db_dir, exist_ok=True)
+            
+        import subprocess
+        # Roda o script de seed passando a variavel de ambiente correspondente
+        env = os.environ.copy()
+        env['DATABASE_PATH'] = DB_PATH
+        subprocess.run(["python", "init_db.py"], env=env, check=True)
+        print("Banco de dados criado e semeado com sucesso!")
+    except Exception as e:
+        print(f"Erro ao inicializar banco de dados: {e}")
 
 def get_db_connection():
     conn = sqlite3.connect(DB_PATH)
