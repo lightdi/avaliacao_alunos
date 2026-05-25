@@ -1,0 +1,154 @@
+<!-- templates/avaliar_turma.html -->
+{% extends 'base.html' %}
+
+{% block title %}Avaliação Docente - Turma {{ turma }} - IFPB{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center animate-fade-in">
+    <div class="col-md-10 col-lg-8">
+        
+        <!-- Wizard Progress Header -->
+        <div class="text-center mb-4">
+            <span class="badge {% if 'A' in turma %}course-badge-a{% elif 'C' in turma %}course-badge-c{% elif 'D' in turma %}course-badge-d{% else %}course-badge-i{% endif %} fs-5 mb-2 px-3 py-2">
+                Turma {{ turma }}
+            </span>
+            <h1 class="fw-bold mb-1">Avaliação Docente Passo a Passo</h1>
+            <p class="text-white-50 fs-7">Para concluir o processo, avalie cada um dos professores da sua grade de disciplinas.</p>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="glass-card p-3 mb-4 border-opacity-50">
+            <div class="progress bg-secondary bg-opacity-25 rounded-pill mb-2" style="height: 10px;">
+                <div class="progress-bar bg-success progress-bar-striped progress-bar-animated rounded-pill" role="progressbar" style="width: {{ progress_percent }}%" aria-valuenow="{{ progress_percent }}" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+            <div class="d-flex justify-content-between text-white-50 fs-8 fw-semibold">
+                <span>Progresso: {{ progress_percent }}%</span>
+                <span class="text-info">Docente {{ step + 1 }} de {{ total_disciplines }}</span>
+            </div>
+        </div>
+        
+        <!-- Questionnaire Wizard Card -->
+        <div class="glass-card p-4 p-md-5">
+            <form action="{{ url_for('avaliar_turma', nome_turma=turma) }}" method="POST" autocomplete="off">
+                <!-- Step state propagation -->
+                <input type="hidden" name="disciplina_id" value="{{ disciplina_atual.id }}">
+                <input type="hidden" name="step" value="{{ step }}">
+                
+                <!-- Active Teacher Spotlight Banner -->
+                <div class="p-4 rounded-4 mb-5 text-center" style="background: rgba(16, 185, 129, 0.04); border: 1px solid rgba(16, 185, 129, 0.15);">
+                    <span class="text-success fs-8 fw-bold text-uppercase tracking-wider mb-2 d-block"><i class="bi bi-person-badge-fill me-1"></i>Docente em Avaliação</span>
+                    <h2 class="fw-extrabold mb-1 text-white">{{ disciplina_atual.nome_professor }}</h2>
+                    <p class="text-white-50 fs-7 mb-0">Disciplina: <strong class="text-info">{{ disciplina_atual.nome_disciplina }}</strong></p>
+                </div>
+
+                <!-- Evaluation Criteria -->
+                <div class="mb-5 pb-4 border-bottom border-secondary border-opacity-10">
+                    <h5 class="fw-bold text-warning mb-4">
+                        <i class="bi bi-star-half me-2"></i>Critérios de Avaliação (Notas de 1 a 5)
+                    </h5>
+                    
+                    <!-- Criterion A: Domínio de Conteúdo -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <h6 class="fw-bold mb-0 text-white">Domínio de Conteúdo</h6>
+                                <p class="text-white-50 fs-8 mb-0">O professor demonstra clareza, segurança e domínio profundo dos assuntos abordados?</p>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between gap-2 flex-wrap">
+                            {% for v in range(1, 6) %}
+                            <input type="radio" class="btn-check" name="nota_conteudo" id="cont_{{ v }}" value="{{ v }}" required>
+                            <label class="btn btn-outline-success flex-grow-1 py-2 fw-bold text-center" for="cont_{{ v }}">{{ v }}</label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <!-- Criterion B: Didática -->
+                    <div class="mb-4 mt-5">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <h6 class="fw-bold mb-0 text-white">Metodologia e Didática</h6>
+                                <p class="text-white-50 fs-8 mb-0">As explicações são compreensíveis, dinâmicas e facilitam a absorção da matéria?</p>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between gap-2 flex-wrap">
+                            {% for v in range(1, 6) %}
+                            <input type="radio" class="btn-check" name="nota_didatica" id="did_{{ v }}" value="{{ v }}" required>
+                            <label class="btn btn-outline-success flex-grow-1 py-2 fw-bold text-center" for="did_{{ v }}">{{ v }}</label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <!-- Criterion C: Presença -->
+                    <div class="mb-4 mt-5">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <h6 class="fw-bold mb-0 text-white">Frequência e Pontualidade</h6>
+                                <p class="text-white-50 fs-8 mb-0">O professor cumpre rigorosamente os horários e comparece pontualmente às aulas?</p>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between gap-2 flex-wrap">
+                            {% for v in range(1, 6) %}
+                            <input type="radio" class="btn-check" name="nota_presenca" id="pres_{{ v }}" value="{{ v }}" required>
+                            <label class="btn btn-outline-success flex-grow-1 py-2 fw-bold text-center" for="pres_{{ v }}">{{ v }}</label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <!-- Criterion D: Relacionamento -->
+                    <div class="mb-4 mt-5">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <h6 class="fw-bold mb-0 text-white">Relacionamento com Estudantes</h6>
+                                <p class="text-white-50 fs-8 mb-0">O professor trata a turma com respeito, é acessível e incentiva a participação de todos?</p>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between gap-2 flex-wrap">
+                            {% for v in range(1, 6) %}
+                            <input type="radio" class="btn-check" name="nota_relacionamento" id="rel_{{ v }}" value="{{ v }}" required>
+                            <label class="btn btn-outline-success flex-grow-1 py-2 fw-bold text-center" for="rel_{{ v }}">{{ v }}</label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. Qualitative Comments -->
+                <div class="mb-5">
+                    <h5 class="fw-bold text-success mb-3">
+                        <i class="bi bi-chat-dots me-2"></i>Comentários Qualitativos (Opcional)
+                    </h5>
+                    
+                    <div class="mb-4">
+                        <label for="pontos_positivos" class="form-label text-white-50 fs-8 fw-semibold text-uppercase">Pontos Positivos & Elogios</label>
+                        <textarea class="form-control glass-input" id="pontos_positivos" name="pontos_positivos" rows="3" placeholder="O que este professor faz bem? Como a metodologia dele te ajuda..."></textarea>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="pontos_melhoria" class="form-label text-white-50 fs-8 fw-semibold text-uppercase text-danger">Pontos de Melhoria & Sugestões de Ajuste</label>
+                        <textarea class="form-control glass-input" id="pontos_melhoria" name="pontos_melhoria" rows="3" placeholder="O que poderia ser melhorado nas aulas ou dinâmicas deste professor..."></textarea>
+                    </div>
+                </div>
+
+                <!-- Wizard Navigation Buttons -->
+                <div class="d-grid gap-2">
+                    {% if step < total_disciplines - 1 %}
+                    <button type="submit" class="btn btn-emerald btn-lg py-3">
+                        <i class="bi bi-arrow-right-circle-fill me-2"></i>Salvar e Avançar para Próximo Docente
+                    </button>
+                    {% else %}
+                    <button type="submit" class="btn btn-emerald btn-lg py-3" style="background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%); box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4);">
+                        <i class="bi bi-send-fill me-2"></i>Concluir e Enviar Todas as Avaliações
+                    </button>
+                    {% endif %}
+                    
+                    <div class="text-white-50 fs-8 text-center mt-3">
+                        <i class="bi bi-info-circle me-1"></i>Suas respostas são armazenadas temporariamente em sua sessão de navegação. Elas serão salvas no banco de dados todas de uma vez somente após você avaliar o último professor.
+                    </div>
+                </div>
+                
+            </form>
+        </div>
+        
+    </div>
+</div>
+{% endblock %}

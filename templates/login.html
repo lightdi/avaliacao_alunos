@@ -1,0 +1,118 @@
+<!-- templates/login.html -->
+{% extends 'base.html' %}
+
+{% block title %}Login - IFPB Avaliações{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center align-items-stretch py-4 g-4 animate-fade-in">
+    <!-- Coluna 1: Acesso Administrativo (Login) -->
+    <div class="col-lg-5 d-flex">
+        <div class="glass-card text-center p-5 w-100 d-flex flex-column justify-content-center">
+            <div class="mb-4">
+                <div class="d-inline-flex align-items-center justify-content-center bg-success bg-opacity-10 text-success p-3 rounded-circle mb-3 border border-success border-opacity-25" style="width: 70px; height: 70px;">
+                    <i class="bi bi-shield-lock-fill fs-1"></i>
+                </div>
+                <h2 class="fw-bold mb-1">Área do Servidor</h2>
+                <p class="text-white-50 fs-7">Faça login para gerenciar e visualizar os dashboards de estatísticas</p>
+            </div>
+            
+            <form action="{{ url_for('login') }}" method="POST" autocomplete="off" class="text-start">
+                <!-- Username Input -->
+                <div class="form-floating mb-3">
+                    <input type="text" class="form-control glass-input" id="username" name="username" placeholder="admin" required autofocus>
+                    <label for="username">Usuário</label>
+                </div>
+                
+                <!-- Password Input -->
+                <div class="form-floating mb-4">
+                    <input type="password" class="form-control glass-input" id="password" name="password" placeholder="Senha" required>
+                    <label for="password">Senha</label>
+                </div>
+                
+                <!-- Submit Button -->
+                <div class="d-grid mb-3">
+                    <button type="submit" class="btn btn-emerald btn-lg py-3">
+                        <i class="bi bi-box-arrow-in-right me-2"></i>Entrar no Sistema
+                    </button>
+                </div>
+                
+                <div class="text-white-50 fs-8 border-top border-secondary border-opacity-25 pt-3 mt-3 text-center">
+                    <i class="bi bi-info-circle me-1"></i>Utilize o administrador padrão (`admin` / `admin123`).
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Coluna 2: Portal de Avaliação do Estudante (Público) -->
+    <div class="col-lg-6 d-flex">
+        <div class="glass-card p-5 w-100 d-flex flex-column justify-content-between">
+            <div>
+                <div class="d-flex align-items-center mb-4">
+                    <div class="d-inline-flex align-items-center justify-content-center bg-info bg-opacity-10 text-info p-2 rounded-3 me-3 border border-info border-opacity-25">
+                        <i class="bi bi-people-fill fs-2"></i>
+                    </div>
+                    <div>
+                        <h2 class="fw-bold mb-0">Portal do Estudante</h2>
+                        <span class="text-white-50 fs-7">Avaliação docente rápida e 100% anônima</span>
+                    </div>
+                </div>
+                <p class="text-white-50 fs-7 mb-4">Selecione sua turma abaixo para acessar o questionário público e avaliar seus professores neste período letivo:</p>
+                
+                <div class="row g-3">
+                    <!-- Agropecuária -->
+                    <div class="col-sm-6">
+                        <div class="p-3 rounded-3" style="background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.15);">
+                            <div class="fw-bold text-success fs-8 mb-2"><i class="bi bi-flower1 me-1"></i>Agropecuária</div>
+                            <div class="d-flex gap-2">
+                                <a href="{{ url_for('avaliar_turma', nome_turma='1A') }}" class="class-btn flex-grow-1">1A</a>
+                                <a href="{{ url_for('avaliar_turma', nome_turma='2A') }}" class="class-btn flex-grow-1">2A</a>
+                                <a href="{{ url_for('avaliar_turma', nome_turma='3A') }}" class="class-btn flex-grow-1">3A</a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Alimentos -->
+                    <div class="col-sm-6">
+                        <div class="p-3 rounded-3" style="background: rgba(59, 130, 246, 0.05); border: 1px solid rgba(59, 130, 246, 0.15);">
+                            <div class="fw-bold text-info fs-8 mb-2"><i class="bi bi-egg-fried me-1"></i>Alimentos</div>
+                            <div class="d-flex gap-2">
+                                <a href="{{ url_for('avaliar_turma', nome_turma='1C') }}" class="class-btn flex-grow-1">1C</a>
+                                <a href="{{ url_for('avaliar_turma', nome_turma='2C') }}" class="class-btn flex-grow-1">2C</a>
+                                <a href="{{ url_for('avaliar_turma', nome_turma='3C') }}" class="class-btn flex-grow-1">3C</a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Meio Ambiente -->
+                    <div class="col-sm-6">
+                        <div class="p-3 rounded-3" style="background: rgba(168, 85, 247, 0.05); border: 1px solid rgba(168, 85, 247, 0.15);">
+                            <div class="fw-bold text-purple fs-8 mb-2" style="color: #a855f7 !important;"><i class="bi bi-tree me-1"></i>Meio Ambiente</div>
+                            <div class="d-flex gap-2">
+                                <a href="{{ url_for('avaliar_turma', nome_turma='1D') }}" class="class-btn flex-grow-1">1D</a>
+                                <a href="{{ url_for('avaliar_turma', nome_turma='2D') }}" class="class-btn flex-grow-1">2D</a>
+                                <a href="{{ url_for('avaliar_turma', nome_turma='3D') }}" class="class-btn flex-grow-1">3D</a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Informática -->
+                    <div class="col-sm-6">
+                        <div class="p-3 rounded-3" style="background: rgba(245, 158, 11, 0.05); border: 1px solid rgba(245, 158, 11, 0.15);">
+                            <div class="fw-bold text-warning fs-8 mb-2"><i class="bi bi-laptop me-1"></i>Informática</div>
+                            <div class="d-flex gap-2">
+                                <a href="{{ url_for('avaliar_turma', nome_turma='1I') }}" class="class-btn flex-grow-1">1I</a>
+                                <a href="{{ url_for('avaliar_turma', nome_turma='2I') }}" class="class-btn flex-grow-1">2I</a>
+                                <a href="{{ url_for('avaliar_turma', nome_turma='3I') }}" class="class-btn flex-grow-1">3I</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-white-50 fs-8 border-top border-secondary border-opacity-25 pt-3 mt-4 text-center">
+                <i class="bi bi-shield-fill-check text-success me-1"></i>Nenhum dado pessoal ou identificação do aluno é armazenado.
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

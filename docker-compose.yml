@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  avaliacao_alunos:
+    build: .
+    container_name: avaliacao_alunos
+    restart: always
+
+    environment:
+      - FLASK_HOST=0.0.0.0
+      - FLASK_PORT=8020
+      - FLASK_DEBUG=False
+      # Define o subcaminho para o Flask gerar as rotas internas e assets corretamente
+      - APPLICATION_ROOT=/avaliacoes
+
+    ports:
+      - "8020:8020"
+
+    volumes:
+      # Monta o banco de dados SQLite diretamente para persistir as avaliações no host
+      - ./database.db:/app/database.db
+
+    networks:
+      - proxy
+
+    labels:
+      - "traefik.enable=true"
+      # Expor por caminho no Traefik: https://integramaker.ifpb.edu.br/avaliacoes
+      - "traefik.http.routers.avaliacao.rule=Host(`integramaker.ifpb.edu.br`) && (PathPrefix(`/avaliacoes`) || Path(`/avaliacoes`))"
+      - "traefik.http.routers.avaliacao.entrypoints=websecure"
+      - "traefik.http.routers.avaliacao.tls=true"
+      - "traefik.http.routers.avaliacao.tls.certresolver=le"
+      
+      # Middleware para remover o prefixo /avaliacoes antes de passar ao Flask (o Flask trata internamente com o PrefixMiddleware)
+      - "traefik.http.middlewares.avaliacao-stripprefix.stripprefix.prefixes=/avaliacoes"
+      - "traefik.http.routers.avaliacao.middlewares=avaliacao-stripprefix@docker"
+      
+      # Porta interna em que o container escuta
+      - "traefik.http.services.avaliacao.loadbalancer.server.port=8020"
+      - "traefik.docker.network=proxy"
+
+networks:
+  proxy:
+    external: true

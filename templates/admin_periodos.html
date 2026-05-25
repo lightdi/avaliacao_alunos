@@ -1,0 +1,214 @@
+<!-- templates/admin_periodos.html -->
+{% extends 'base.html' %}
+
+{% block title %}Gerenciar Períodos Letivos - IFPB{% endblock %}
+
+{% block content %}
+<!-- Back and Header -->
+<div class="row mb-4 align-items-center animate-fade-in">
+    <div class="col-12 mb-2">
+        <a href="{{ url_for('dashboard_geral') }}" class="btn btn-glass-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i>Voltar ao Painel Geral
+        </a>
+    </div>
+    <div class="col-md-12">
+        <h1 class="fw-bold mb-1"><i class="bi bi-calendar-event text-info me-2"></i>Gestão de Períodos Letivos</h1>
+        <p class="text-white-50">Cadastre e controle os bimestres escolares. Apenas o período marcado como <strong>Ativo</strong> receberá novas respostas dos estudantes.</p>
+    </div>
+</div>
+
+<div class="row g-4 animate-fade-in delay-1">
+    <!-- Form to Register a New Period -->
+    <div class="col-lg-4">
+        <div class="glass-card h-100">
+            <h4 class="fw-bold mb-4 text-info"><i class="bi bi-calendar-plus me-2"></i>Novo Período</h4>
+            
+            <form action="{{ url_for('admin_periodos') }}" method="POST" autocomplete="off">
+                <!-- Year -->
+                <div class="form-floating mb-3">
+                    <input type="number" class="form-control glass-input" id="ano" name="ano" min="2020" max="2100" placeholder="2026" required value="2026">
+                    <label for="ano">Ano Letivo</label>
+                </div>
+                
+                <!-- Bimester -->
+                <div class="form-floating mb-4">
+                    <select class="form-select glass-input glass-select" id="bimestre" name="bimestre" required>
+                        <option value="" disabled selected hidden>Selecione o Bimestre...</option>
+                        <option value="1">1º Bimestre</option>
+                        <option value="2">2º Bimestre</option>
+                        <option value="3">3º Bimestre</option>
+                        <option value="4">4º Bimestre</option>
+                    </select>
+                    <label for="bimestre">Bimestre</label>
+                </div>
+                
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-emerald py-3">
+                        <i class="bi bi-check-circle-fill me-2"></i>Cadastrar Período
+                    </button>
+                </div>
+            </form>
+            
+            <div class="text-white-50 fs-8 border-top border-secondary border-opacity-25 pt-3 mt-4">
+                <i class="bi bi-info-circle me-1"></i>Novos períodos são cadastrados inicialmente como <strong>Inativos</strong>. Para torná-los vigentes, clique no botão "Ativar" na lista ao lado.
+            </div>
+        </div>
+    </div>
+
+    <!-- Registered Periods List -->
+    <div class="col-lg-8">
+        <div class="glass-card h-100">
+            <h4 class="fw-bold mb-4"><i class="bi bi-list-stars me-2 text-warning"></i>Histórico de Períodos Letivos</h4>
+            
+            <div class="glass-table-container">
+                <table class="table glass-table align-middle">
+                    <thead>
+                        <tr>
+                            <th class="ps-4">Ano / Período</th>
+                            <th class="text-center">Bimestre</th>
+                            <th class="text-center">Status</th>
+                            <th class="text-end pe-4">Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in periodos %}
+                        <tr>
+                            <td class="ps-4 fw-bold">
+                                <i class="bi bi-calendar-check me-2 text-info"></i>{{ p.ano }}
+                            </td>
+                            <td class="text-center">{{ p.bimestre }}º Bimestre</td>
+                            <td class="text-center">
+                                {% if p.ativo == 1 %}
+                                <span class="badge-glass-success py-1 px-3 fs-7">
+                                    <i class="bi bi-check-circle-fill me-1"></i>Ativo
+                                </span>
+                                {% else %}
+                                <span class="badge bg-secondary bg-opacity-25 border border-secondary border-opacity-15 text-white-50 py-1 px-3 fs-7" style="border-radius: 6px;">
+                                    Inativo
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end pe-4">
+                                <div class="d-inline-flex gap-2">
+                                    {% if p.ativo == 0 %}
+                                    <form action="{{ url_for('ativar_periodo', id=p.id) }}" method="POST" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-glass-secondary border-info border-opacity-20 text-info px-3">
+                                            <i class="bi bi-play-fill me-1"></i>Ativar
+                                        </button>
+                                    </form>
+                                    {% else %}
+                                    <button class="btn btn-sm btn-outline-success border-0 px-3" disabled>
+                                        <i class="bi bi-check-lg me-1"></i>Vigente
+                                    </button>
+                                    {% endif %}
+                                    
+                                    <button type="button" class="btn btn-sm btn-glass-danger border-danger border-opacity-20 text-danger px-2" data-bs-toggle="modal" data-bs-target="#clearPeriodModal{{ p.id }}" title="Zerar todas as respostas deste período">
+                                        <i class="bi bi-trash-fill"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="4" class="text-center text-white-50 py-4">Nenhum período letivo cadastrado.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="text-white-50 fs-8 mt-3">
+                <i class="bi bi-exclamation-triangle-fill text-warning me-1"></i><strong>Atenção:</strong> Ao ativar um período letivo, todos os outros períodos são desativados de imediato. Apenas um único período letivo pode estar ativo por vez.
+            </div>
+        </div>
+    </div>
+</div>
+
+{% for p in periodos %}
+<!-- MODAL: Zerar Período Letivo {{ p.ano }}.{{ p.bimestre }} -->
+<div class="modal fade" id="clearPeriodModal{{ p.id }}" tabindex="-1" aria-labelledby="clearPeriodModalLabel{{ p.id }}" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content glass-card p-4 border-danger border-opacity-20" style="background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(20px);">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fw-bold text-danger d-flex align-items-center gap-2" id="clearPeriodModalLabel{{ p.id }}">
+          <i class="bi bi-exclamation-triangle-fill animate-pulse"></i>
+          Zerar Período Completo
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body pt-3">
+        <p class="text-white-50 fs-7">
+          Você está prestes a excluir **TODAS** as avaliações de **todas as turmas e disciplinas** do período letivo <strong class="text-white">{{ p.ano }}.{{ p.bimestre }}º Bimestre</strong>.
+        </p>
+        
+        <div class="alert alert-danger bg-danger bg-opacity-10 border-danger border-opacity-20 text-danger p-3 rounded-3 mb-4" role="alert" style="color: #f43f5e !important;">
+          <i class="bi bi-info-circle-fill me-2"></i>
+          <strong>Aviso Crítico:</strong> Esta ação é irreversível e limpará completamente as estatísticas históricas deste período!
+        </div>
+        
+        <form method="POST" action="{{ url_for('limpar_periodo', periodo_id=p.id) }}">
+          <div class="mb-3">
+            <label class="form-label text-white-50 fs-8 fw-semibold text-uppercase mb-2">Digite a frase abaixo para confirmar:</label>
+            <div class="p-2 rounded-3 bg-black bg-opacity-40 text-info fw-mono fs-8 mb-3 text-center border border-info border-opacity-15 select-all" id="fraseEsperada{{ p.id }}">
+              LIMPAR TODAS AVALIACOES DO PERIODO {{ p.ano }}.{{ p.bimestre }}
+            </div>
+            <input type="text" class="form-control glass-input period-confirm-input" id="fraseConfirmacaoPeriodoInput{{ p.id }}" name="frase_confirmacao_periodo" data-period-id="{{ p.id }}" placeholder="Digite a frase exatamente como exibida acima" autocomplete="off" required>
+          </div>
+          
+          <div class="d-flex justify-content-end gap-2 mt-4">
+            <button type="button" class="btn btn-sm btn-glass-secondary border-opacity-10 px-3" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-sm btn-danger px-4" id="btnConfirmar{{ p.id }}" disabled>
+              <i class="bi bi-trash-fill me-1"></i>Zerar Tudo
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endfor %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Normalizador auxiliar de strings para comparação flexível e sem estresse para o usuário
+    function normalizarTexto(texto) {
+        return texto
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '') // remove acentos
+            .replace(/[^a-zA-Z0-9\s\-\.]/g, '') // remove especiais
+            .replace(/\s+/g, ' ') // normaliza múltiplos espaços
+            .trim()
+            .toUpperCase();
+    }
+    
+    // Delegação de eventos no contêiner da página ou escutar todos os inputs de exclusão
+    const confirmInputs = document.querySelectorAll('.period-confirm-input');
+    confirmInputs.forEach(function(inputEl) {
+        const periodId = inputEl.dataset.periodId;
+        const fraseEsperadaEl = document.getElementById('fraseEsperada' + periodId);
+        const btnEl = document.getElementById('btnConfirmar' + periodId);
+        
+        if (fraseEsperadaEl && btnEl) {
+            const fraseEsperadaNorm = normalizarTexto(fraseEsperadaEl.textContent);
+            
+            inputEl.addEventListener('input', function() {
+                const digitadoNorm = normalizarTexto(inputEl.value);
+                if (digitadoNorm === fraseEsperadaNorm) {
+                    btnEl.removeAttribute('disabled');
+                    inputEl.classList.remove('is-invalid');
+                    inputEl.classList.add('is-valid');
+                } else {
+                    btnEl.setAttribute('disabled', 'true');
+                    inputEl.classList.remove('is-valid');
+                    if (inputEl.value.length > 0) {
+                        inputEl.classList.add('is-invalid');
+                    } else {
+                        inputEl.classList.remove('is-invalid');
+                    }
+                }
+            });
+        }
+    });
+});
+</script>
+{% endblock %}

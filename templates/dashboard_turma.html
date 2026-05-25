@@ -1,0 +1,441 @@
+<!-- templates/dashboard_turma.html -->
+{% extends 'base.html' %}
+
+{% block title %}Turma {{ turma }} - IFPB Avaliações{% endblock %}
+
+{% block content %}
+<!-- Back to Dashboard and Header -->
+<div class="row mb-4 align-items-center animate-fade-in">
+    <div class="col-12 mb-2">
+        <a href="{{ url_for('dashboard_geral') }}{% if periodo_selecionado %}?periodo_id={{ periodo_selecionado.id }}{% endif %}" class="btn btn-glass-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i>Voltar ao Painel Geral
+        </a>
+    </div>
+    <div class="col-md-7">
+        <h1 class="fw-bold mb-1 d-inline-flex align-items-center gap-2 flex-wrap">
+            <span class="badge {% if 'A' in turma %}course-badge-a{% elif 'C' in turma %}course-badge-c{% elif 'D' in turma %}course-badge-d{% else %}course-badge-i{% endif %}">{{ turma }}</span>
+            <span>Turma {{ turma }}</span>
+            <button onclick="copyEvaluationLink('{{ request.url_root }}turma/{{ turma }}/avaliar', this)" class="btn btn-sm btn-glass-secondary border-info border-opacity-20 px-2 py-1 d-flex align-items-center" style="height: 30px;" title="Copiar Link de Avaliação Pública">
+                <i class="bi bi-link-45deg text-info fs-6"></i>
+                <span class="fs-8 text-white-50 d-none d-sm-inline ms-1">Copiar Link</span>
+            </button>
+        </h1>
+        <p class="text-white-50">Estatísticas detalhadas no período <strong>{{ periodo_selecionado.ano }}.{{ periodo_selecionado.bimestre }}</strong> {% if periodo_selecionado.ativo == 1 %}(Ativo){% else %}(Consulta){% endif %}</p>
+    </div>
+    
+    <!-- GET Filter Form -->
+    <div class="col-md-5">
+        <form method="GET" action="{{ url_for('dashboard_turma', nome_turma=turma) }}">
+            {% if periodo_selecionado %}
+            <input type="hidden" name="periodo_id" value="{{ periodo_selecionado.id }}">
+            {% endif %}
+            <div class="glass-card p-3 d-flex flex-column gap-2 border-opacity-50">
+                <label for="disciplina_id" class="text-white-50 fs-8 fw-semibold text-uppercase">Filtrar Professor / Disciplina</label>
+                <div class="d-flex gap-2">
+                    <select class="form-select glass-input glass-select flex-grow-1" id="disciplina_id" name="disciplina_id" onchange="this.form.submit()">
+                        <option value="">Todos os Professores / Disciplinas</option>
+                        {% for d in disciplinas_opcoes %}
+                            <option value="{{ d.id }}" {% if selected_disciplina_id == d.id %}selected{% endif %}>
+                                {{ d.nome_professor }} — {{ d.nome_disciplina }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <noscript>
+                        <button type="submit" class="btn btn-emerald px-3">Filtrar</button>
+                    </noscript>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Active Filter Metadata Info -->
+{% if selected_disciplina %}
+<div class="row mb-4 animate-fade-in delay-1">
+    <div class="col-12">
+        <div class="glass-card p-3 border-info border-opacity-25 bg-info bg-opacity-5 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-funnel-fill text-info fs-4 me-3 animate-pulse"></i>
+                <div>
+                    <h6 class="fw-bold mb-0">Filtro Ativo: {{ selected_disciplina.nome_professor }}</h6>
+                    <span class="text-white-50 fs-7">Exibindo avaliações específicas da disciplina de <strong>{{ selected_disciplina.nome_disciplina }}</strong></span>
+                </div>
+            </div>
+            <div class="d-flex gap-2 align-items-center flex-wrap">
+                <a href="{{ url_for('gerar_pdf_disciplina', disciplina_id=selected_disciplina.id) }}{% if periodo_selecionado %}?periodo_id={{ periodo_selecionado.id }}{% endif %}" class="btn btn-sm btn-emerald px-3 py-2 rounded-3 shadow">
+                    <i class="bi bi-file-earmark-pdf-fill me-1"></i>Baixar PDF
+                </a>
+                <button type="button" class="btn btn-sm btn-glass-danger border-danger border-opacity-20 text-danger px-3 py-2 rounded-3 shadow" data-bs-toggle="modal" data-bs-target="#deleteEvaluationModal">
+                    <i class="bi bi-trash-fill me-1"></i>Excluir Respostas
+                </button>
+                <a href="{{ url_for('dashboard_turma', nome_turma=turma) }}{% if periodo_selecionado %}?periodo_id={{ periodo_selecionado.id }}{% endif %}" class="btn btn-sm btn-glass-secondary border-danger border-opacity-20 text-danger px-3 py-2 rounded-3">
+                    <i class="bi bi-x-circle me-1"></i>Limpar Filtro
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% elif periodo_selecionado %}
+<div class="row mb-4 animate-fade-in delay-1">
+    <div class="col-12">
+        <div class="glass-card p-3 border-danger border-opacity-25 bg-danger bg-opacity-5 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-exclamation-triangle-fill text-danger fs-4 me-3 animate-pulse"></i>
+                <div>
+                    <h6 class="fw-bold mb-0 text-danger">Zerar Dados da Turma</h6>
+                    <span class="text-white-50 fs-7">Apague permanentemente todas as avaliações de todas as disciplinas da <strong>Turma {{ turma }}</strong> no período <strong>{{ periodo_selecionado.ano }}.{{ periodo_selecionado.bimestre }}º Bimestre</strong>.</span>
+                </div>
+            </div>
+            <div>
+                <button type="button" class="btn btn-sm btn-glass-danger border-danger border-opacity-20 text-danger px-3 py-2 rounded-3 shadow" data-bs-toggle="modal" data-bs-target="#deleteTurmaModal">
+                    <i class="bi bi-trash-fill me-1"></i>Zerar Turma no Período
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Evaluation Metrics (4 Cards) -->
+<div class="row g-4 mb-5 animate-fade-in delay-2">
+    <!-- Conteúdo -->
+    <div class="col-sm-6 col-lg-3">
+        <div class="glass-card glass-card-hover h-100 d-flex flex-column justify-content-between">
+            <div>
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <span class="text-white-50 fw-semibold text-uppercase fs-8">Domínio de Conteúdo</span>
+                    <span class="badge-glass-success py-1 px-2">
+                        <i class="bi bi-book"></i>
+                    </span>
+                </div>
+                <div class="rating-big-number">{{ "%.2f"|format(metrics.avg_conteudo) }}</div>
+                <div class="rating-star-container mb-0">
+                    {% for i in range(1, 6) %}
+                        <i class="bi {% if metrics.avg_conteudo >= i %}bi-star-fill{% elif metrics.avg_conteudo >= i - 0.5 %}bi-star-half{% else %}bi-star{% endif %}"></i>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="mt-3">
+                <div class="metric-bar-bg" style="height: 6px;">
+                    <div class="metric-bar-fill emerald" style="width: {{ (metrics.avg_conteudo / 5.0) * 100 }}%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Didática -->
+    <div class="col-sm-6 col-lg-3">
+        <div class="glass-card glass-card-hover h-100 d-flex flex-column justify-content-between">
+            <div>
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <span class="text-white-50 fw-semibold text-uppercase fs-8">Metodologia e Didática</span>
+                    <span class="badge-glass-info py-1 px-2">
+                        <i class="bi bi-chat-left-heart"></i>
+                    </span>
+                </div>
+                <div class="rating-big-number">{{ "%.2f"|format(metrics.avg_didatica) }}</div>
+                <div class="rating-star-container mb-0">
+                    {% for i in range(1, 6) %}
+                        <i class="bi {% if metrics.avg_didatica >= i %}bi-star-fill{% elif metrics.avg_didatica >= i - 0.5 %}bi-star-half{% else %}bi-star{% endif %}"></i>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="mt-3">
+                <div class="metric-bar-bg" style="height: 6px;">
+                    <div class="metric-bar-fill blue" style="width: {{ (metrics.avg_didatica / 5.0) * 100 }}%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Presença -->
+    <div class="col-sm-6 col-lg-3">
+        <div class="glass-card glass-card-hover h-100 d-flex flex-column justify-content-between">
+            <div>
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <span class="text-white-50 fw-semibold text-uppercase fs-8">Frequência e Pontualidade</span>
+                    <span class="badge-glass-info py-1 px-2" style="background: rgba(245, 158, 11, 0.15) !important; color: #f59e0b !important; border-color: rgba(245, 158, 11, 0.3);">
+                        <i class="bi bi-clock-history"></i>
+                    </span>
+                </div>
+                <div class="rating-big-number">{{ "%.2f"|format(metrics.avg_presenca) }}</div>
+                <div class="rating-star-container mb-0">
+                    {% for i in range(1, 6) %}
+                        <i class="bi {% if metrics.avg_presenca >= i %}bi-star-fill{% elif metrics.avg_presenca >= i - 0.5 %}bi-star-half{% else %}bi-star{% endif %}"></i>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="mt-3">
+                <div class="metric-bar-bg" style="height: 6px;">
+                    <div class="metric-bar-fill yellow" style="width: {{ (metrics.avg_presenca / 5.0) * 100 }}%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Relacionamento -->
+    <div class="col-sm-6 col-lg-3">
+        <div class="glass-card glass-card-hover h-100 d-flex flex-column justify-content-between">
+            <div>
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <span class="text-white-50 fw-semibold text-uppercase fs-8">Empatia e Diálogo</span>
+                    <span class="badge-glass-danger py-1 px-2">
+                        <i class="bi bi-emoji-smile"></i>
+                    </span>
+                </div>
+                <div class="rating-big-number">{{ "%.2f"|format(metrics.avg_relacionamento) }}</div>
+                <div class="rating-star-container mb-0">
+                    {% for i in range(1, 6) %}
+                        <i class="bi {% if metrics.avg_relacionamento >= i %}bi-star-fill{% elif metrics.avg_relacionamento >= i - 0.5 %}bi-star-half{% else %}bi-star{% endif %}"></i>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="mt-3">
+                <div class="metric-bar-bg" style="height: 6px;">
+                    <div class="metric-bar-fill red" style="width: {{ (metrics.avg_relacionamento / 5.0) * 100 }}%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Evaluations Metadata Summary -->
+<div class="row mb-4 animate-fade-in delay-2">
+    <div class="col-12 d-flex justify-content-between align-items-center border-bottom border-secondary border-opacity-10 pb-3">
+        <h4 class="fw-bold mb-0">
+            <i class="bi bi-chat-right-text me-2 text-info"></i>Comentários e Feedbacks Qualitativos
+        </h4>
+        <span class="badge bg-secondary bg-opacity-25 border border-secondary border-opacity-10 py-2 px-3 rounded-pill text-white fw-bold">
+            {{ metrics.count }} Avaliações nesta seleção
+        </span>
+    </div>
+</div>
+
+<!-- Side-by-side Qualitative Comments -->
+<div class="row g-4 animate-fade-in delay-3">
+    <!-- Positive Comments Column -->
+    <div class="col-md-6">
+        <div class="glass-card h-100" style="background: rgba(16, 185, 129, 0.02); border-color: rgba(16, 185, 129, 0.1);">
+            <div class="d-flex align-items-center mb-4 pb-2 border-bottom border-success border-opacity-10">
+                <span class="d-inline-flex align-items-center justify-content-center bg-success bg-opacity-15 text-success rounded-circle me-3" style="width: 38px; height: 38px;">
+                    <i class="bi bi-plus-lg fs-5"></i>
+                </span>
+                <div>
+                    <h5 class="fw-bold mb-0 text-success">Pontos Positivos & Elogios</h5>
+                    <span class="text-white-50 fs-8">O que os alunos mais apreciam</span>
+                </div>
+            </div>
+            
+            <div class="d-flex flex-column gap-3 overflow-y-auto" style="max-height: 500px; padding-right: 8px;">
+                {% set positives = comentarios | selectattr('pontos_positivos') | list %}
+                {% if positives %}
+                    {% for c in positives %}
+                        <div class="p-3 rounded-3" style="background: rgba(255, 255, 255, 0.02); border-left: 4px solid #10b981;">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-white-50 fs-8 fw-semibold"><i class="bi bi-journal-bookmark me-1 text-success"></i>{{ c.nome_disciplina }}</span>
+                                <span class="text-white-50 fs-8"><i class="bi bi-person text-info me-1"></i>Prof. {{ c.nome_professor }}</span>
+                            </div>
+                            <p class="mb-0 fs-7 italic-text text-white">"{{ c.pontos_positivos }}"</p>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-5 text-white-50 fs-7">
+                        <i class="bi bi-chat-square-dots fs-1 mb-2 d-block opacity-25"></i>
+                        Sem comentários positivos registrados para esta seleção.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Improvement Comments Column -->
+    <div class="col-md-6">
+        <div class="glass-card h-100" style="background: rgba(244, 63, 94, 0.02); border-color: rgba(244, 63, 94, 0.1);">
+            <div class="d-flex align-items-center mb-4 pb-2 border-bottom border-danger border-opacity-10">
+                <span class="d-inline-flex align-items-center justify-content-center bg-danger bg-opacity-15 text-danger rounded-circle me-3" style="width: 38px; height: 38px;">
+                    <i class="bi bi-exclamation-triangle fs-5"></i>
+                </span>
+                <div>
+                    <h5 class="fw-bold mb-0 text-danger">Pontos de Melhoria & Sugestões</h5>
+                    <span class="text-white-50 fs-8">Sugestões de aperfeiçoamento pedagógico</span>
+                </div>
+            </div>
+            
+            <div class="d-flex flex-column gap-3 overflow-y-auto" style="max-height: 500px; padding-right: 8px;">
+                {% set improvements = comentarios | selectattr('pontos_melhoria') | list %}
+                {% if improvements %}
+                    {% for c in improvements %}
+                        <div class="p-3 rounded-3" style="background: rgba(255, 255, 255, 0.02); border-left: 4px solid #f43f5e;">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-white-50 fs-8 fw-semibold"><i class="bi bi-journal-bookmark me-1 text-danger"></i>{{ c.nome_disciplina }}</span>
+                                <span class="text-white-50 fs-8"><i class="bi bi-person text-info me-1"></i>Prof. {{ c.nome_professor }}</span>
+                            </div>
+                            <p class="mb-0 fs-7 text-white">"{{ c.pontos_melhoria }}"</p>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-5 text-white-50 fs-7">
+                        <i class="bi bi-chat-square-dots fs-1 mb-2 d-block opacity-25"></i>
+                        Sem sugestões de melhoria registradas para esta seleção.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: Excluir Avaliações Individuais (Professor) -->
+{% if selected_disciplina and periodo_selecionado %}
+<div class="modal fade" id="deleteEvaluationModal" tabindex="-1" aria-labelledby="deleteEvaluationModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content glass-card p-4 border-danger border-opacity-20" style="background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(20px);">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fw-bold text-danger d-flex align-items-center gap-2" id="deleteEvaluationModalLabel">
+          <i class="bi bi-exclamation-triangle-fill animate-pulse"></i>
+          Exclusão de Segurança
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body pt-3">
+        <p class="text-white-50 fs-7">
+          Você está prestes a excluir <strong>TODAS</strong> as avaliações do professor <strong class="text-white">{{ selected_disciplina.nome_professor }}</strong> para a disciplina <strong class="text-white">{{ selected_disciplina.nome_disciplina }}</strong> no período letivo <strong class="text-white">{{ periodo_selecionado.ano }}.{{ periodo_selecionado.bimestre }}º Bimestre</strong>.
+        </p>
+        
+        <div class="alert alert-danger bg-danger bg-opacity-10 border-danger border-opacity-20 text-danger p-3 rounded-3 mb-4" role="alert" style="color: #f43f5e !important;">
+          <i class="bi bi-info-circle-fill me-2"></i>
+          <strong>Atenção:</strong> Esta ação é irreversível! Todos os dados quantitativos e qualitativos desta disciplina para este período serão perdidos permanentemente.
+        </div>
+        
+        <form method="POST" action="{{ url_for('excluir_avaliacoes_disciplina', disciplina_id=selected_disciplina.id, periodo_id=periodo_selecionado.id) }}">
+          <div class="mb-3">
+            <label class="form-label text-white-50 fs-8 fw-semibold text-uppercase mb-2">Digite a frase abaixo para confirmar:</label>
+            <div class="p-2 rounded-3 bg-black bg-opacity-40 text-info fw-mono fs-8 mb-3 text-center border border-info border-opacity-15 select-all" id="fraseEsperada">
+              {{ frase_confirmacao }}
+            </div>
+            <input type="text" class="form-control glass-input" id="fraseConfirmacaoInput" name="frase_confirmacao" placeholder="Digite a frase exatamente como exibida acima" autocomplete="off" required>
+          </div>
+          
+          <div class="d-flex justify-content-end gap-2 mt-4">
+            <button type="button" class="btn btn-sm btn-glass-secondary border-opacity-10 px-3" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-sm btn-danger px-4" id="btnConfirmarExclusao" disabled>
+              <i class="bi bi-trash-fill me-1"></i>Excluir Definitivamente
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- MODAL: Zerar Dados da Turma inteira no Período -->
+{% if not selected_disciplina and periodo_selecionado %}
+<div class="modal fade" id="deleteTurmaModal" tabindex="-1" aria-labelledby="deleteTurmaModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content glass-card p-4 border-danger border-opacity-20" style="background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(20px);">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fw-bold text-danger d-flex align-items-center gap-2" id="deleteTurmaModalLabel">
+          <i class="bi bi-exclamation-triangle-fill animate-pulse"></i>
+          Zerar Turma no Período
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body pt-3">
+        <p class="text-white-50 fs-7">
+          Você está prestes a apagar <strong>TODAS</strong> as avaliações de **todas as disciplinas** da <strong class="text-white">Turma {{ turma }}</strong> no período letivo <strong class="text-white">{{ periodo_selecionado.ano }}.{{ periodo_selecionado.bimestre }}º Bimestre</strong>.
+        </p>
+        
+        <div class="alert alert-danger bg-danger bg-opacity-10 border-danger border-opacity-20 text-danger p-3 rounded-3 mb-4" role="alert" style="color: #f43f5e !important;">
+          <i class="bi bi-info-circle-fill me-2"></i>
+          <strong>Atenção Crítica:</strong> Isso redefinirá todas as métricas da turma inteira de uma única vez para este período!
+        </div>
+        
+        <form method="POST" action="{{ url_for('excluir_avaliacoes_turma', nome_turma=turma, periodo_id=periodo_selecionado.id) }}">
+          <div class="mb-3">
+            <label class="form-label text-white-50 fs-8 fw-semibold text-uppercase mb-2">Digite a frase abaixo para confirmar:</label>
+            <div class="p-2 rounded-3 bg-black bg-opacity-40 text-info fw-mono fs-8 mb-3 text-center border border-info border-opacity-15 select-all" id="fraseEsperadaTurma">
+              {{ frase_confirmacao_turma }}
+            </div>
+            <input type="text" class="form-control glass-input" id="fraseConfirmacaoTurmaInput" name="frase_confirmacao_turma" placeholder="Digite a frase exatamente como exibida acima" autocomplete="off" required>
+          </div>
+          
+          <div class="d-flex justify-content-end gap-2 mt-4">
+            <button type="button" class="btn btn-sm btn-glass-secondary border-opacity-10 px-3" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-sm btn-danger px-4" id="btnConfirmarExclusaoTurma" disabled>
+              <i class="bi bi-trash-fill me-1"></i>Zerar Turma
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Normalizador auxiliar de strings para comparação flexível e sem estresse para o usuário
+    function normalizarTexto(texto) {
+        return texto
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '') // remove acentos
+            .replace(/[^a-zA-Z0-9\s\-\.]/g, '') // remove especiais
+            .replace(/\s+/g, ' ') // normaliza múltiplos espaços
+            .trim()
+            .toUpperCase();
+    }
+
+    // 1. Validador do Modal de Professor Individual
+    const fraseEsperadaEl = document.getElementById('fraseEsperada');
+    const inputEl = document.getElementById('fraseConfirmacaoInput');
+    const btnEl = document.getElementById('btnConfirmarExclusao');
+    
+    if (fraseEsperadaEl && inputEl && btnEl) {
+        const fraseEsperadaNorm = normalizarTexto(fraseEsperadaEl.textContent);
+        
+        inputEl.addEventListener('input', function() {
+            const digitadoNorm = normalizarTexto(inputEl.value);
+            if (digitadoNorm === fraseEsperadaNorm) {
+                btnEl.removeAttribute('disabled');
+                inputEl.classList.remove('is-invalid');
+                inputEl.classList.add('is-valid');
+            } else {
+                btnEl.setAttribute('disabled', 'true');
+                inputEl.classList.remove('is-valid');
+                if (inputEl.value.length > 0) {
+                    inputEl.classList.add('is-invalid');
+                } else {
+                    inputEl.classList.remove('is-invalid');
+                }
+            }
+        });
+    }
+
+    // 2. Validador do Modal de Turma Inteira
+    const fraseEsperadaTurmaEl = document.getElementById('fraseEsperadaTurma');
+    const inputTurmaEl = document.getElementById('fraseConfirmacaoTurmaInput');
+    const btnTurmaEl = document.getElementById('btnConfirmarExclusaoTurma');
+    
+    if (fraseEsperadaTurmaEl && inputTurmaEl && btnTurmaEl) {
+        const fraseEsperadaTurmaNorm = normalizarTexto(fraseEsperadaTurmaEl.textContent);
+        
+        inputTurmaEl.addEventListener('input', function() {
+            const digitadoNorm = normalizarTexto(inputTurmaEl.value);
+            if (digitadoNorm === fraseEsperadaTurmaNorm) {
+                btnTurmaEl.removeAttribute('disabled');
+                inputTurmaEl.classList.remove('is-invalid');
+                inputTurmaEl.classList.add('is-valid');
+            } else {
+                btnTurmaEl.setAttribute('disabled', 'true');
+                inputTurmaEl.classList.remove('is-valid');
+                if (inputTurmaEl.value.length > 0) {
+                    inputTurmaEl.classList.add('is-invalid');
+                } else {
+                    inputTurmaEl.classList.remove('is-invalid');
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

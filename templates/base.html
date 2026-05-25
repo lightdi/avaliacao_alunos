@@ -1,0 +1,188 @@
+<!-- templates/base.html -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}IFPB Avaliações{% endblock %}</title>
+    
+    <!-- Bootstrap 5 CSS via CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons via CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <!-- Custom Premium Stylesheet -->
+    <link href="{{ url_for('static', filename='css/custom.css') }}" rel="stylesheet">
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+    <!-- Fixed Navbar (Glassmorphic) -->
+    <nav class="navbar navbar-expand-lg glass-navbar fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('dashboard_geral') }}">
+                <i class="bi bi-mortarboard-fill me-2"></i>IFPB Avaliações
+            </a>
+            
+            {% if session.get('user_id') %}
+            <button class="navbar-toggler border-0 text-white" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Alternar navegação">
+                <i class="bi bi-list fs-2"></i>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0 align-items-lg-center">
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="{{ url_for('dashboard_geral') }}{% if periodo_selecionado %}?periodo_id={{ periodo_selecionado.id }}{% endif %}">
+                            <i class="bi bi-speedometer2 me-1"></i>Estatísticas Gerais
+                        </a>
+                    </li>
+                    
+                    <!-- Turmas Dropdown categorized by course -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-people me-1"></i>Turmas
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-glass dropdown-menu-dark" aria-labelledby="navbarDropdown">
+                            <li class="dropdown-header text-white-50"><i class="bi bi-flower1 me-1 text-success"></i>Agropecuária (A)</li>
+                            <li><a class="dropdown-item" href="{{ url_for('dashboard_turma', nome_turma='1A') }}{% if periodo_selecionado %}?periodo_id={{ periodo_selecionado.id }}{% endif %}">1º Ano - 1A</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('dashboard_turma', nome_turma='2A') }}{% if periodo_selecionado %}?periodo_id={{ periodo_selecionado.id }}{% endif %}">2º Ano - 2A</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('dashboard_turma', nome_turma='3A') }}{% if periodo_selecionado %}?periodo_id={{ periodo_selecionado.id }}{% endif %}">3º Ano - 3A</a></li>
+                            
+                            <li><hr class="dropdown-divider border-secondary opacity-25"></li>
+                            <li class="dropdown-header text-white-50"><i class="bi bi-egg-fried me-1 text-primary"></i>Alimentos (C)</li>
+                            <li><a class="dropdown-item" href="{{ url_for('dashboard_turma', nome_turma='1C') }}{% if periodo_selecionado %}?periodo_id={{ periodo_selecionado.id }}{% endif %}">1º Ano - 1C</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('dashboard_turma', nome_turma='2C') }}{% if periodo_selecionado %}?periodo_id={{ periodo_selecionado.id }}{% endif %}">2º Ano - 2C</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('dashboard_turma', nome_turma='3C') }}{% if periodo_selecionado %}?periodo_id={{ periodo_selecionado.id }}{% endif %}">3º Ano - 3C</a></li>
+                            
+                            <li><hr class="dropdown-divider border-secondary opacity-25"></li>
+                            <li class="dropdown-header text-white-50"><i class="bi bi-tree me-1 text-purple"></i>Meio Ambiente (D)</li>
+                            <li><a class="dropdown-item" href="{{ url_for('dashboard_turma', nome_turma='1D') }}{% if periodo_selecionado %}?periodo_id={{ periodo_selecionado.id }}{% endif %}">1º Ano - 1D</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('dashboard_turma', nome_turma='2D') }}{% if periodo_selecionado %}?periodo_id={{ periodo_selecionado.id }}{% endif %}">2º Ano - 2D</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('dashboard_turma', nome_turma='3D') }}{% if periodo_selecionado %}?periodo_id={{ periodo_selecionado.id }}{% endif %}">3º Ano - 3D</a></li>
+                            
+                            <li><hr class="dropdown-divider border-secondary opacity-25"></li>
+                            <li class="dropdown-header text-white-50"><i class="bi bi-laptop me-1 text-warning"></i>Informática (I)</li>
+                            <li><a class="dropdown-item" href="{{ url_for('dashboard_turma', nome_turma='1I') }}{% if periodo_selecionado %}?periodo_id={{ periodo_selecionado.id }}{% endif %}">1º Ano - 1I</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('dashboard_turma', nome_turma='2I') }}{% if periodo_selecionado %}?periodo_id={{ periodo_selecionado.id }}{% endif %}">2º Ano - 2I</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('dashboard_turma', nome_turma='3I') }}{% if periodo_selecionado %}?periodo_id={{ periodo_selecionado.id }}{% endif %}">3º Ano - 3I</a></li>
+                        </ul>
+                    </li>
+                    
+                    <!-- Períodos Letivos Dropdown (Seletor) -->
+                    {% if periodo_selecionado %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarPeriodoDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-calendar3 me-1 text-info"></i>Período: <strong>{{ periodo_selecionado.ano }}.{{ periodo_selecionado.bimestre }}</strong>
+                            {% if periodo_selecionado.ativo == 1 %}
+                                <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25 ms-1" style="font-size: 0.65rem;">Ativo</span>
+                            {% else %}
+                                <span class="badge bg-secondary bg-opacity-25 text-white-50 border border-secondary border-opacity-25 ms-1" style="font-size: 0.65rem;">Consulta</span>
+                            {% endif %}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-glass dropdown-menu-dark" aria-labelledby="navbarPeriodoDropdown">
+                            <li class="dropdown-header text-white-50"><i class="bi bi-funnel-fill me-1"></i>Período de Consulta</li>
+                            {% for p in todos_periodos %}
+                            <li>
+                                <a class="dropdown-item d-flex justify-content-between align-items-center {% if periodo_selecionado.id == p.id %}active{% endif %}" href="?periodo_id={{ p.id }}">
+                                    <span>{{ p.ano }}.{{ p.bimestre }} Letivo</span>
+                                    {% if p.ativo == 1 %}
+                                    <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25" style="font-size: 0.65rem; padding: 2px 6px;">Ativo</span>
+                                    {% endif %}
+                                </a>
+                            </li>
+                            {% endfor %}
+                            <li><hr class="dropdown-divider border-secondary opacity-25"></li>
+                            <li>
+                                <a class="dropdown-item text-info" href="{{ url_for('admin_periodos') }}">
+                                    <i class="bi bi-gear-fill me-1"></i>Gerenciar Períodos
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    {% endif %}
+                </ul>
+                
+                <div class="d-flex align-items-center gap-3">
+                    <span class="text-white-50 d-none d-lg-inline fs-7">
+                        <i class="bi bi-person-circle me-1"></i>{{ session.get('username') }}
+                    </span>
+                    <a href="{{ url_for('logout') }}" class="btn btn-outline-danger btn-sm border-0 px-3 py-2 rounded-3 text-white">
+                        <i class="bi bi-box-arrow-right me-1"></i>Sair
+                    </a>
+                </div>
+            </div>
+            {% else %}
+            <div class="d-flex align-items-center ms-auto">
+                <a href="{{ url_for('login') }}" class="btn btn-outline-info btn-sm px-3 py-2 rounded-3 text-white border-info border-opacity-50" style="background: rgba(59, 130, 246, 0.05);">
+                    <i class="bi bi-shield-lock-fill me-1 text-info"></i>Acesso Docente
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <main class="container my-4">
+        
+        <!-- Flask Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="row justify-content-center">
+                    <div class="col-md-10 col-lg-8">
+                        {% for category, message in messages %}
+                            <div class="alert alert-glass {% if category == 'error' %}alert-glass-error{% else %}alert-glass-success{% endif %} alert-dismissible fade show animate-fade-in" role="alert">
+                                <div class="d-flex align-items-center">
+                                    {% if category == 'error' %}
+                                        <i class="bi bi-exclamation-triangle-fill fs-4 me-2 text-danger"></i>
+                                    {% else %}
+                                        <i class="bi bi-check-circle-fill fs-4 me-2 text-success"></i>
+                                    {% endif %}
+                                    <div>{{ message }}</div>
+                                </div>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Fechar"></button>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <!-- Child Page Content -->
+        {% block content %}{% endblock %}
+        
+    </main>
+
+    <!-- Footer -->
+    <footer class="container text-center py-5 mt-5 border-top border-secondary border-opacity-10 text-white-50 fs-7">
+        <p class="mb-1">&copy; 2026 IFPB Campus Sousa. Todos os direitos reservados.</p>
+        <p>Desenvolvido com <i class="bi bi-heart-fill text-danger mx-1"></i> via Flask & Jinja2 (SSR).</p>
+    </footer>
+
+    <!-- Bootstrap 5 JavaScript Bundle (Needed for dropdowns and mobile toggler) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Helper Global de Cópia de Link -->
+    <script>
+        function copyEvaluationLink(url, btn) {
+            navigator.clipboard.writeText(url).then(function() {
+                const icon = btn.querySelector('i');
+                const originalClass = icon.className;
+                
+                // Animação temporária de sucesso
+                icon.className = 'bi bi-check-lg text-success';
+                btn.classList.add('border-success');
+                
+                setTimeout(function() {
+                    icon.className = originalClass;
+                    btn.classList.remove('border-success');
+                }, 2000);
+            }).catch(function(err) {
+                console.error('Erro ao copiar link: ', err);
+            });
+        }
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

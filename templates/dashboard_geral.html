@@ -1,0 +1,342 @@
+<!-- templates/dashboard_geral.html -->
+{% extends 'base.html' %}
+
+{% block title %}Dashboard Geral - IFPB Avaliações{% endblock %}
+
+{% block content %}
+<div class="row mb-4 animate-fade-in">
+    <div class="col-12 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+        <div>
+            <h1 class="fw-bold mb-1">Painel Institucional</h1>
+            <p class="text-white-50">Análise global de desempenho e avaliações do corpo docente do IFPB</p>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            {% if periodo_selecionado %}
+                {% if periodo_selecionado.ativo == 1 %}
+                <span class="badge badge-glass-success p-3 fs-6">
+                    <i class="bi bi-calendar-check me-2"></i>Período: {{ periodo_selecionado.ano }}.{{ periodo_selecionado.bimestre }} (Ativo)
+                </span>
+                {% else %}
+                <span class="badge badge-glass-info p-3 fs-6" style="background: rgba(59, 130, 246, 0.15) !important; color: #3b82f6 !important; border-color: rgba(59, 130, 246, 0.3);">
+                    <i class="bi bi-calendar-x me-2"></i>Período: {{ periodo_selecionado.ano }}.{{ periodo_selecionado.bimestre }} (Consulta)
+                </span>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Core Summary Cards -->
+<div class="row g-4 mb-5 animate-fade-in delay-1">
+    <!-- Total Reviews Card -->
+    <div class="col-md-4">
+        <div class="glass-card glass-card-hover h-100 d-flex flex-column justify-content-center">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <span class="text-white-50 fw-semibold text-uppercase fs-8">Volume de Dados</span>
+                <span class="bg-primary bg-opacity-25 text-primary p-2 rounded-3 border border-primary border-opacity-10">
+                    <i class="bi bi-chat-left-quote fs-4 text-info"></i>
+                </span>
+            </div>
+            <h2 class="display-4 fw-extrabold mb-1">{{ stats.total_avaliacoes }}</h2>
+            <p class="text-white-50 mb-0 fs-7">Total de avaliações individuais recebidas</p>
+        </div>
+    </div>
+
+    <!-- Overall Institutional Average Card -->
+    <div class="col-md-8">
+        <div class="glass-card glass-card-hover h-100">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <span class="text-white-50 fw-semibold text-uppercase fs-8">Média Geral de Notas (Escala 1 a 5)</span>
+                <span class="bg-success bg-opacity-25 text-success p-2 rounded-3 border border-success border-opacity-10">
+                    <i class="bi bi-star-fill fs-4 text-success"></i>
+                </span>
+            </div>
+            
+            <div class="row g-4">
+                <!-- Conteúdo -->
+                <div class="col-6 col-sm-3 text-center border-end border-secondary border-opacity-25">
+                    <div class="rating-big-number">{{ "%.2f"|format(stats.avg_conteudo) }}</div>
+                    <div class="rating-star-container">
+                        {% for i in range(1, 6) %}
+                            <i class="bi {% if stats.avg_conteudo >= i %}bi-star-fill{% elif stats.avg_conteudo >= i - 0.5 %}bi-star-half{% else %}bi-star{% endif %}"></i>
+                        {% endfor %}
+                    </div>
+                    <div class="text-white-50 fs-8 fw-semibold">Conteúdo</div>
+                </div>
+                
+                <!-- Didática -->
+                <div class="col-6 col-sm-3 text-center border-end border-sm-none border-secondary border-opacity-25">
+                    <div class="rating-big-number">{{ "%.2f"|format(stats.avg_didatica) }}</div>
+                    <div class="rating-star-container">
+                        {% for i in range(1, 6) %}
+                            <i class="bi {% if stats.avg_didatica >= i %}bi-star-fill{% elif stats.avg_didatica >= i - 0.5 %}bi-star-half{% else %}bi-star{% endif %}"></i>
+                        {% endfor %}
+                    </div>
+                    <div class="text-white-50 fs-8 fw-semibold">Didática</div>
+                </div>
+                
+                <!-- Presença -->
+                <div class="col-6 col-sm-3 text-center border-end border-secondary border-opacity-25 mt-4 mt-sm-0">
+                    <div class="rating-big-number">{{ "%.2f"|format(stats.avg_presenca) }}</div>
+                    <div class="rating-star-container">
+                        {% for i in range(1, 6) %}
+                            <i class="bi {% if stats.avg_presenca >= i %}bi-star-fill{% elif stats.avg_presenca >= i - 0.5 %}bi-star-half{% else %}bi-star{% endif %}"></i>
+                        {% endfor %}
+                    </div>
+                    <div class="text-white-50 fs-8 fw-semibold">Presença</div>
+                </div>
+                
+                <!-- Relacionamento -->
+                <div class="col-6 col-sm-3 text-center mt-4 mt-sm-0">
+                    <div class="rating-big-number">{{ "%.2f"|format(stats.avg_relacionamento) }}</div>
+                    <div class="rating-star-container">
+                        {% for i in range(1, 6) %}
+                            <i class="bi {% if stats.avg_relacionamento >= i %}bi-star-fill{% elif stats.avg_relacionamento >= i - 0.5 %}bi-star-half{% else %}bi-star{% endif %}"></i>
+                        {% endfor %}
+                    </div>
+                    <div class="text-white-50 fs-8 fw-semibold">Relacionamento</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Detailed Metrics with Progress Bars -->
+<div class="row g-4 mb-5 animate-fade-in delay-2">
+    <div class="col-lg-6">
+        <div class="glass-card h-100">
+            <h4 class="fw-bold mb-4"><i class="bi bi-graph-up me-2 text-success"></i>Métricas Institucionais Detalhadas</h4>
+            
+            <!-- Conteúdo -->
+            <div class="metric-container">
+                <div class="metric-label">
+                    <span class="metric-name">Domínio de Conteúdo</span>
+                    <span class="metric-value">{{ "%.2f"|format(stats.avg_conteudo) }} / 5.00</span>
+                </div>
+                <div class="metric-bar-bg">
+                    <div class="metric-bar-fill emerald" style="width: {{ (stats.avg_conteudo / 5.0) * 100 }}%"></div>
+                </div>
+            </div>
+            
+            <!-- Didática -->
+            <div class="metric-container">
+                <div class="metric-label">
+                    <span class="metric-name">Didática e Explicação</span>
+                    <span class="metric-value">{{ "%.2f"|format(stats.avg_didatica) }} / 5.00</span>
+                </div>
+                <div class="metric-bar-bg">
+                    <div class="metric-bar-fill blue" style="width: {{ (stats.avg_didatica / 5.0) * 100 }}%"></div>
+                </div>
+            </div>
+            
+            <!-- Presença -->
+            <div class="metric-container">
+                <div class="metric-label">
+                    <span class="metric-name">Pontualidade e Frequência</span>
+                    <span class="metric-value">{{ "%.2f"|format(stats.avg_presenca) }} / 5.00</span>
+                </div>
+                <div class="metric-bar-bg">
+                    <div class="metric-bar-fill yellow" style="width: {{ (stats.avg_presenca / 5.0) * 100 }}%"></div>
+                </div>
+            </div>
+            
+            <!-- Relacionamento -->
+            <div class="metric-container">
+                <div class="metric-label">
+                    <span class="metric-name">Relacionamento com Estudantes</span>
+                    <span class="metric-value">{{ "%.2f"|format(stats.avg_relacionamento) }} / 5.00</span>
+                </div>
+                <div class="metric-bar-bg">
+                    <div class="metric-bar-fill red" style="width: {{ (stats.avg_relacionamento / 5.0) * 100 }}%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Top Professors Table -->
+    <div class="col-lg-6">
+        <div class="glass-card h-100 d-flex flex-column justify-content-between">
+            <div>
+                <h4 class="fw-bold mb-4"><i class="bi bi-award me-2 text-warning"></i>Professores de Destaque</h4>
+                <div class="glass-table-container">
+                    <table class="table glass-table align-middle">
+                        <thead>
+                            <tr>
+                                <th>Professor</th>
+                                <th class="text-center">Média Geral</th>
+                                <th class="text-center">Avaliações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for prof in top_professors %}
+                            <tr>
+                                <td class="fw-bold"><i class="bi bi-person me-2 text-info"></i>{{ prof.nome_professor }}</td>
+                                <td class="text-center">
+                                    <span class="badge-glass-success py-1 px-2">
+                                        {{ "%.2f"|format(prof.media_geral) }} <i class="bi bi-star-fill text-warning ms-1"></i>
+                                    </span>
+                                </td>
+                                <td class="text-center text-white-50 fs-7">{{ prof.total }}</td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="3" class="text-center text-white-50">Sem avaliações suficientes no momento.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="text-white-50 fs-8 mt-3">
+                <i class="bi bi-info-circle me-1"></i>Professores com no mínimo 3 avaliações individuais, ordenados pela maior média ponderada.
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Navigation by Classes (Grouped by Course) -->
+<h3 class="fw-bold mb-4 animate-fade-in delay-3"><i class="bi bi-grid me-2 text-info"></i>Navegação por Turmas</h3>
+<div class="row g-4 animate-fade-in delay-4">
+    <!-- Agropecuária -->
+    <div class="col-md-6 col-lg-3">
+        <div class="course-group-card">
+            <div class="d-flex align-items-center mb-3">
+                <span class="course-badge course-badge-a">A</span>
+                <h5 class="fw-bold mb-0">Agropecuária</h5>
+            </div>
+            <div class="row g-2">
+                <div class="col-4">
+                    <div class="d-flex btn-group w-100">
+                        <a href="{{ url_for('dashboard_turma', nome_turma='1A') }}{% if periodo_selecionado %}?periodo_id={{ periodo_selecionado.id }}{% endif %}" class="class-btn flex-grow-1" style="border-top-right-radius: 0; border-bottom-right-radius: 0; font-size: 0.85rem; padding: 6px;">1A</a>
+                        <button onclick="copyEvaluationLink('{{ request.url_root }}turma/1A/avaliar', this)" class="btn btn-sm btn-glass-secondary px-2" style="border-top-left-radius: 0; border-bottom-left-radius: 0; border-left: none; min-width: 32px;" title="Copiar Link do Questionário">
+                            <i class="bi bi-link-45deg fs-7 text-info"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="d-flex btn-group w-100">
+                        <a href="{{ url_for('dashboard_turma', nome_turma='2A') }}{% if periodo_selecionado %}?periodo_id={{ periodo_selecionado.id }}{% endif %}" class="class-btn flex-grow-1" style="border-top-right-radius: 0; border-bottom-right-radius: 0; font-size: 0.85rem; padding: 6px;">2A</a>
+                        <button onclick="copyEvaluationLink('{{ request.url_root }}turma/2A/avaliar', this)" class="btn btn-sm btn-glass-secondary px-2" style="border-top-left-radius: 0; border-bottom-left-radius: 0; border-left: none; min-width: 32px;" title="Copiar Link do Questionário">
+                            <i class="bi bi-link-45deg fs-7 text-info"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="d-flex btn-group w-100">
+                        <a href="{{ url_for('dashboard_turma', nome_turma='3A') }}{% if periodo_selecionado %}?periodo_id={{ periodo_selecionado.id }}{% endif %}" class="class-btn flex-grow-1" style="border-top-right-radius: 0; border-bottom-right-radius: 0; font-size: 0.85rem; padding: 6px;">3A</a>
+                        <button onclick="copyEvaluationLink('{{ request.url_root }}turma/3A/avaliar', this)" class="btn btn-sm btn-glass-secondary px-2" style="border-top-left-radius: 0; border-bottom-left-radius: 0; border-left: none; min-width: 32px;" title="Copiar Link do Questionário">
+                            <i class="bi bi-link-45deg fs-7 text-info"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alimentos -->
+    <div class="col-md-6 col-lg-3">
+        <div class="course-group-card">
+            <div class="d-flex align-items-center mb-3">
+                <span class="course-badge course-badge-c">C</span>
+                <h5 class="fw-bold mb-0">Alimentos</h5>
+            </div>
+            <div class="row g-2">
+                <div class="col-4">
+                    <div class="d-flex btn-group w-100">
+                        <a href="{{ url_for('dashboard_turma', nome_turma='1C') }}{% if periodo_selecionado %}?periodo_id={{ periodo_selecionado.id }}{% endif %}" class="class-btn flex-grow-1" style="border-top-right-radius: 0; border-bottom-right-radius: 0; font-size: 0.85rem; padding: 6px;">1C</a>
+                        <button onclick="copyEvaluationLink('{{ request.url_root }}turma/1C/avaliar', this)" class="btn btn-sm btn-glass-secondary px-2" style="border-top-left-radius: 0; border-bottom-left-radius: 0; border-left: none; min-width: 32px;" title="Copiar Link do Questionário">
+                            <i class="bi bi-link-45deg fs-7 text-info"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="d-flex btn-group w-100">
+                        <a href="{{ url_for('dashboard_turma', nome_turma='2C') }}{% if periodo_selecionado %}?periodo_id={{ periodo_selecionado.id }}{% endif %}" class="class-btn flex-grow-1" style="border-top-right-radius: 0; border-bottom-right-radius: 0; font-size: 0.85rem; padding: 6px;">2C</a>
+                        <button onclick="copyEvaluationLink('{{ request.url_root }}turma/2C/avaliar', this)" class="btn btn-sm btn-glass-secondary px-2" style="border-top-left-radius: 0; border-bottom-left-radius: 0; border-left: none; min-width: 32px;" title="Copiar Link do Questionário">
+                            <i class="bi bi-link-45deg fs-7 text-info"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="d-flex btn-group w-100">
+                        <a href="{{ url_for('dashboard_turma', nome_turma='3C') }}{% if periodo_selecionado %}?periodo_id={{ periodo_selecionado.id }}{% endif %}" class="class-btn flex-grow-1" style="border-top-right-radius: 0; border-bottom-right-radius: 0; font-size: 0.85rem; padding: 6px;">3C</a>
+                        <button onclick="copyEvaluationLink('{{ request.url_root }}turma/3C/avaliar', this)" class="btn btn-sm btn-glass-secondary px-2" style="border-top-left-radius: 0; border-bottom-left-radius: 0; border-left: none; min-width: 32px;" title="Copiar Link do Questionário">
+                            <i class="bi bi-link-45deg fs-7 text-info"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Meio Ambiente -->
+    <div class="col-md-6 col-lg-3">
+        <div class="course-group-card">
+            <div class="d-flex align-items-center mb-3">
+                <span class="course-badge course-badge-d">D</span>
+                <h5 class="fw-bold mb-0">Meio Ambiente</h5>
+            </div>
+            <div class="row g-2">
+                <div class="col-4">
+                    <div class="d-flex btn-group w-100">
+                        <a href="{{ url_for('dashboard_turma', nome_turma='1D') }}{% if periodo_selecionado %}?periodo_id={{ periodo_selecionado.id }}{% endif %}" class="class-btn flex-grow-1" style="border-top-right-radius: 0; border-bottom-right-radius: 0; font-size: 0.85rem; padding: 6px;">1D</a>
+                        <button onclick="copyEvaluationLink('{{ request.url_root }}turma/1D/avaliar', this)" class="btn btn-sm btn-glass-secondary px-2" style="border-top-left-radius: 0; border-bottom-left-radius: 0; border-left: none; min-width: 32px;" title="Copiar Link do Questionário">
+                            <i class="bi bi-link-45deg fs-7 text-info"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="d-flex btn-group w-100">
+                        <a href="{{ url_for('dashboard_turma', nome_turma='2D') }}{% if periodo_selecionado %}?periodo_id={{ periodo_selecionado.id }}{% endif %}" class="class-btn flex-grow-1" style="border-top-right-radius: 0; border-bottom-right-radius: 0; font-size: 0.85rem; padding: 6px;">2D</a>
+                        <button onclick="copyEvaluationLink('{{ request.url_root }}turma/2D/avaliar', this)" class="btn btn-sm btn-glass-secondary px-2" style="border-top-left-radius: 0; border-bottom-left-radius: 0; border-left: none; min-width: 32px;" title="Copiar Link do Questionário">
+                            <i class="bi bi-link-45deg fs-7 text-info"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="d-flex btn-group w-100">
+                        <a href="{{ url_for('dashboard_turma', nome_turma='3D') }}{% if periodo_selecionado %}?periodo_id={{ periodo_selecionado.id }}{% endif %}" class="class-btn flex-grow-1" style="border-top-right-radius: 0; border-bottom-right-radius: 0; font-size: 0.85rem; padding: 6px;">3D</a>
+                        <button onclick="copyEvaluationLink('{{ request.url_root }}turma/3D/avaliar', this)" class="btn btn-sm btn-glass-secondary px-2" style="border-top-left-radius: 0; border-bottom-left-radius: 0; border-left: none; min-width: 32px;" title="Copiar Link do Questionário">
+                            <i class="bi bi-link-45deg fs-7 text-info"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Informática -->
+    <div class="col-md-6 col-lg-3">
+        <div class="course-group-card">
+            <div class="d-flex align-items-center mb-3">
+                <span class="course-badge course-badge-i">I</span>
+                <h5 class="fw-bold mb-0">Informática</h5>
+            </div>
+            <div class="row g-2">
+                <div class="col-4">
+                    <div class="d-flex btn-group w-100">
+                        <a href="{{ url_for('dashboard_turma', nome_turma='1I') }}{% if periodo_selecionado %}?periodo_id={{ periodo_selecionado.id }}{% endif %}" class="class-btn flex-grow-1" style="border-top-right-radius: 0; border-bottom-right-radius: 0; font-size: 0.85rem; padding: 6px;">1I</a>
+                        <button onclick="copyEvaluationLink('{{ request.url_root }}turma/1I/avaliar', this)" class="btn btn-sm btn-glass-secondary px-2" style="border-top-left-radius: 0; border-bottom-left-radius: 0; border-left: none; min-width: 32px;" title="Copiar Link do Questionário">
+                            <i class="bi bi-link-45deg fs-7 text-info"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="d-flex btn-group w-100">
+                        <a href="{{ url_for('dashboard_turma', nome_turma='2I') }}{% if periodo_selecionado %}?periodo_id={{ periodo_selecionado.id }}{% endif %}" class="class-btn flex-grow-1" style="border-top-right-radius: 0; border-bottom-right-radius: 0; font-size: 0.85rem; padding: 6px;">2I</a>
+                        <button onclick="copyEvaluationLink('{{ request.url_root }}turma/2I/avaliar', this)" class="btn btn-sm btn-glass-secondary px-2" style="border-top-left-radius: 0; border-bottom-left-radius: 0; border-left: none; min-width: 32px;" title="Copiar Link do Questionário">
+                            <i class="bi bi-link-45deg fs-7 text-info"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="d-flex btn-group w-100">
+                        <a href="{{ url_for('dashboard_turma', nome_turma='3I') }}{% if periodo_selecionado %}?periodo_id={{ periodo_selecionado.id }}{% endif %}" class="class-btn flex-grow-1" style="border-top-right-radius: 0; border-bottom-right-radius: 0; font-size: 0.85rem; padding: 6px;">3I</a>
+                        <button onclick="copyEvaluationLink('{{ request.url_root }}turma/3I/avaliar', this)" class="btn btn-sm btn-glass-secondary px-2" style="border-top-left-radius: 0; border-bottom-left-radius: 0; border-left: none; min-width: 32px;" title="Copiar Link do Questionário">
+                            <i class="bi bi-link-45deg fs-7 text-info"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+</div>
+{% endblock %}

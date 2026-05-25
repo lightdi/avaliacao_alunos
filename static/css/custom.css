@@ -1,0 +1,452 @@
+/* static/css/custom.css */
+
+/* Google Fonts Import */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+    --bg-primary: #080c14;
+    --bg-secondary: #0f172a;
+    --accent-emerald: #10b981;
+    --accent-emerald-glow: rgba(16, 185, 129, 0.2);
+    --accent-blue: #3b82f6;
+    --accent-ruby: #f43f5e;
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --glass-bg: rgba(30, 41, 59, 0.45);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-border-hover: rgba(16, 185, 129, 0.3);
+    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+}
+
+body {
+    background-color: var(--bg-primary);
+    background-image: 
+        radial-gradient(circle at 5% 5%, rgba(16, 185, 129, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 95% 95%, rgba(59, 130, 246, 0.06) 0%, transparent 40%),
+        radial-gradient(circle at 50% 50%, rgba(15, 23, 42, 0.5) 0%, rgba(8, 12, 20, 1) 100%);
+    background-attachment: fixed;
+    color: var(--text-primary);
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    min-height: 100vh;
+    padding-top: 85px; /* space for fixed navbar */
+}
+
+/* Glassmorphism General Cards */
+.glass-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    box-shadow: var(--glass-shadow);
+    padding: 24px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-card-hover:hover {
+    border-color: var(--glass-border-hover);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px 0 rgba(16, 185, 129, 0.15);
+}
+
+/* Custom Navigation Bar (Glassmorphic) */
+.glass-navbar {
+    background: rgba(15, 23, 42, 0.7);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--glass-border);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+}
+
+.navbar-brand {
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.nav-link {
+    color: var(--text-secondary) !important;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.nav-link:hover, .nav-link.active {
+    color: var(--text-primary) !important;
+}
+
+.dropdown-menu-glass {
+    background: rgba(15, 23, 42, 0.95) !important;
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border) !important;
+    border-radius: 12px !important;
+    box-shadow: var(--glass-shadow);
+    padding: 8px !important;
+}
+
+.dropdown-item {
+    color: var(--text-secondary) !important;
+    border-radius: 8px;
+    padding: 8px 16px;
+    transition: all 0.2s ease;
+}
+
+.dropdown-item:hover {
+    background: rgba(16, 185, 129, 0.15) !important;
+    color: var(--accent-emerald) !important;
+}
+
+/* Glass Tables */
+.glass-table-container {
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid var(--glass-border);
+    background: rgba(15, 23, 42, 0.3);
+}
+
+.glass-table {
+    margin-bottom: 0;
+    color: var(--text-primary) !important;
+    background: transparent !important;
+}
+
+.glass-table th {
+    background: rgba(15, 23, 42, 0.8) !important;
+    color: var(--text-secondary) !important;
+    font-weight: 600;
+    border-bottom: 2px solid var(--glass-border) !important;
+    padding: 16px;
+}
+
+.glass-table td {
+    background: transparent !important;
+    color: var(--text-primary) !important;
+    border-bottom: 1px solid var(--glass-border) !important;
+    padding: 16px;
+    vertical-align: middle;
+}
+
+.glass-table tr {
+    color: var(--text-primary) !important;
+}
+
+.glass-table tr:hover td {
+    background: rgba(255, 255, 255, 0.02) !important;
+}
+
+/* Custom Metric Indicators (Progress Bars) */
+.metric-container {
+    margin-bottom: 16px;
+}
+
+.metric-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.metric-name {
+    color: var(--text-secondary);
+}
+
+.metric-value {
+    color: var(--text-primary);
+}
+
+.metric-bar-bg {
+    background: rgba(255, 255, 255, 0.08);
+    height: 10px;
+    border-radius: 5px;
+    overflow: hidden;
+    position: relative;
+}
+
+.metric-bar-fill {
+    height: 100%;
+    border-radius: 5px;
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.metric-bar-fill.emerald {
+    background: linear-gradient(90deg, #059669 0%, #10b981 100%);
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);
+}
+
+.metric-bar-fill.blue {
+    background: linear-gradient(90deg, #2563eb 0%, #3b82f6 100%);
+    box-shadow: 0 0 10px rgba(59, 130, 246, 0.4);
+}
+
+.metric-bar-fill.yellow {
+    background: linear-gradient(90deg, #d97706 0%, #fbbf24 100%);
+    box-shadow: 0 0 10px rgba(251, 191, 36, 0.4);
+}
+
+.metric-bar-fill.red {
+    background: linear-gradient(90deg, #dc2626 0%, #f43f5e 100%);
+    box-shadow: 0 0 10px rgba(244, 63, 94, 0.4);
+}
+
+/* Inputs & Form Styling (Premium Glass) */
+.glass-input {
+    background: rgba(15, 23, 42, 0.6) !important;
+    border: 1px solid var(--glass-border) !important;
+    color: var(--text-primary) !important;
+    border-radius: 10px !important;
+    padding: 12px 16px !important;
+    transition: all 0.3s ease !important;
+}
+
+.glass-input:focus {
+    background: rgba(15, 23, 42, 0.8) !important;
+    border-color: var(--accent-emerald) !important;
+    box-shadow: 0 0 0 3px var(--accent-emerald-glow) !important;
+    outline: none !important;
+}
+
+.glass-select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%2394a3b8' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 1rem center !important;
+    background-size: 16px 12px !important;
+    padding-right: 2.5rem !important;
+}
+
+/* Form floating labels adjustments */
+.form-floating > .glass-input:focus ~ label,
+.form-floating > .glass-input:not(:placeholder-shown) ~ label {
+    color: var(--accent-emerald) !important;
+    opacity: 0.8;
+}
+
+.form-floating > label {
+    color: var(--text-secondary);
+    padding-left: 16px;
+}
+
+/* Premium Glass Buttons */
+.btn-emerald {
+    background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+    color: #ffffff;
+    font-weight: 600;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 24px;
+    box-shadow: 0 4px 14px 0 rgba(16, 185, 129, 0.3);
+    transition: all 0.3s ease;
+}
+
+.btn-emerald:hover {
+    background: linear-gradient(135deg, #047857 0%, #059669 100%);
+    box-shadow: 0 6px 20px 0 rgba(16, 185, 129, 0.5);
+    transform: translateY(-2px);
+    color: #ffffff;
+}
+
+.btn-emerald:active {
+    transform: translateY(0);
+}
+
+.btn-glass-secondary {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--glass-border);
+    color: var(--text-primary);
+    font-weight: 500;
+    border-radius: 10px;
+    padding: 10px 20px;
+    transition: all 0.3s ease;
+}
+
+.btn-glass-secondary:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+    color: var(--text-primary);
+    transform: translateY(-2px);
+}
+
+.btn-glass-danger {
+    background: rgba(244, 63, 94, 0.15);
+    border: 1px solid rgba(244, 63, 94, 0.4);
+    color: #ffffff;
+    font-weight: 600;
+    border-radius: 10px;
+    padding: 10px 20px;
+    transition: all 0.3s ease;
+}
+
+.btn-glass-danger:hover {
+    background: rgba(244, 63, 94, 0.3);
+    border-color: rgba(244, 63, 94, 0.7);
+    color: #ffffff;
+    transform: translateY(-2px);
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #dc2626 0%, #f43f5e 100%) !important;
+    border: none !important;
+    color: #ffffff !important;
+    font-weight: 600 !important;
+    border-radius: 10px !important;
+    box-shadow: 0 4px 14px 0 rgba(244, 63, 94, 0.3) !important;
+    transition: all 0.3s ease !important;
+}
+
+.btn-danger:hover:not(:disabled) {
+    background: linear-gradient(135deg, #be123c 0%, #e11d48 100%) !important;
+    box-shadow: 0 6px 20px 0 rgba(244, 63, 94, 0.5) !important;
+    transform: translateY(-2px) !important;
+    color: #ffffff !important;
+}
+
+.btn-danger:disabled {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: rgba(255, 255, 255, 0.25) !important;
+    box-shadow: none !important;
+    transform: none !important;
+    cursor: not-allowed;
+}
+
+/* Badge Styling */
+.badge-glass-success {
+    background: rgba(16, 185, 129, 0.15) !important;
+    color: #10b981 !important;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-weight: 600;
+}
+
+.badge-glass-danger {
+    background: rgba(244, 63, 94, 0.15) !important;
+    color: #f43f5e !important;
+    border: 1px solid rgba(244, 63, 94, 0.3);
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-weight: 600;
+}
+
+.badge-glass-info {
+    background: rgba(59, 130, 246, 0.15) !important;
+    color: #3b82f6 !important;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-weight: 600;
+}
+
+/* Course Group Selector buttons in Dashboard */
+.course-group-card {
+    background: rgba(15, 23, 42, 0.5);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 16px;
+    height: 100%;
+    transition: all 0.3s ease;
+}
+
+.course-group-card:hover {
+    border-color: rgba(59, 130, 246, 0.3);
+    background: rgba(15, 23, 42, 0.7);
+}
+
+.course-badge {
+    font-size: 1.25rem;
+    font-weight: 800;
+    width: 40px;
+    height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    margin-right: 12px;
+}
+
+.course-badge-a { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
+.course-badge-c { background: rgba(59, 130, 246, 0.15); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.3); }
+.course-badge-d { background: rgba(168, 85, 247, 0.15); color: #a855f7; border: 1px solid rgba(168, 85, 247, 0.3); }
+.course-badge-i { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
+
+.class-btn {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--glass-border);
+    color: var(--text-primary);
+    border-radius: 8px;
+    padding: 8px;
+    text-align: center;
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-decoration: none;
+    display: block;
+    transition: all 0.2s ease;
+}
+
+.class-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: scale(1.05);
+}
+
+/* Alert styling */
+.alert-glass {
+    background: rgba(30, 41, 59, 0.85);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    color: var(--text-primary);
+    box-shadow: var(--glass-shadow);
+}
+
+.alert-glass-error {
+    border-color: rgba(244, 63, 94, 0.4);
+    background: rgba(244, 63, 94, 0.1);
+}
+
+.alert-glass-success {
+    border-color: rgba(16, 185, 129, 0.4);
+    background: rgba(16, 185, 129, 0.1);
+}
+
+/* Floating Elements & Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fade-in {
+    animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.delay-1 { animation-delay: 0.1s; }
+.delay-2 { animation-delay: 0.2s; }
+.delay-3 { animation-delay: 0.3s; }
+.delay-4 { animation-delay: 0.4s; }
+
+/* Large Metric Value Card */
+.rating-big-number {
+    font-size: 3.5rem;
+    font-weight: 800;
+    line-height: 1;
+    background: linear-gradient(135deg, #ffffff 0%, #94a3b8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 8px;
+}
+
+.rating-star-container {
+    color: #f59e0b;
+    font-size: 1.1rem;
+    margin-bottom: 12px;
+}
