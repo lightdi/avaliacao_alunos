@@ -199,6 +199,21 @@
     </div>
 </div>
 
+<!-- Teacher Comparison Chart -->
+{% if not selected_disciplina and professores_stats and metrics.count > 0 %}
+<div class="row mb-5 animate-fade-in delay-2">
+    <div class="col-12">
+        <div class="glass-card">
+            <h4 class="fw-bold mb-4 text-info"><i class="bi bi-bar-chart-line-fill me-2 text-info animate-pulse"></i>Desempenho Comparativo de Professores</h4>
+            <p class="text-white-50 fs-7">Notas médias comparativas de cada docente da <strong>Turma {{ turma }}</strong> nos 4 tópicos avaliados neste período.</p>
+            <div style="position: relative; height: 380px; width: 100%;">
+                <canvas id="teachersComparisonChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
 <!-- Evaluations Metadata Summary -->
 <div class="row mb-4 animate-fade-in delay-2">
     <div class="col-12 d-flex justify-content-between align-items-center border-bottom border-secondary border-opacity-10 pb-3">
@@ -372,6 +387,7 @@
 </div>
 {% endif %}
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Normalizador auxiliar de strings para comparação flexível e sem estresse para o usuário
@@ -385,7 +401,140 @@ document.addEventListener('DOMContentLoaded', function() {
             .toUpperCase();
     }
 
-    // 1. Validador do Modal de Professor Individual
+    // 1. Renderização do Gráfico Comparativo do Chart.js
+    {% if not selected_disciplina and professores_stats and metrics.count > 0 %}
+    (function() {
+        const canvasCtx = document.getElementById('teachersComparisonChart');
+        if (!canvasCtx) return;
+        
+        const labels = [];
+        const avgConteudo = [];
+        const avgDidatica = [];
+        const avgPresenca = [];
+        const avgRelacionamento = [];
+        
+        {% for p in professores_stats %}
+            {% if p.total_respostas > 0 %}
+                labels.push("{{ p.nome_professor }} ({{ p.nome_disciplina }})");
+                avgConteudo.push({{ p.avg_cont | round(2) }});
+                avgDidatica.push({{ p.avg_did | round(2) }});
+                avgPresenca.push({{ p.avg_pres | round(2) }});
+                avgRelacionamento.push({{ p.avg_rel | round(2) }});
+            {% endif %}
+        {% endfor %}
+
+        if (labels.length === 0) {
+            canvasCtx.parentNode.innerHTML = '<div class="text-center py-5 text-white-50"><i class="bi bi-bar-chart fs-1 mb-2 d-block opacity-25"></i>Sem respostas suficientes nesta turma para gerar o gráfico comparativo.</div>';
+            return;
+        }
+
+        new Chart(canvasCtx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Domínio do Conteúdo',
+                        data: avgConteudo,
+                        backgroundColor: 'rgba(16, 185, 129, 0.45)', // Emerald
+                        borderColor: 'rgba(16, 185, 129, 1)',
+                        borderWidth: 1.5,
+                        borderRadius: 5
+                    },
+                    {
+                        label: 'Metodologia e Didática',
+                        data: avgDidatica,
+                        backgroundColor: 'rgba(59, 130, 246, 0.45)', // Blue
+                        borderColor: 'rgba(59, 130, 246, 1)',
+                        borderWidth: 1.5,
+                        borderRadius: 5
+                    },
+                    {
+                        label: 'Frequência e Pontualidade',
+                        data: avgPresenca,
+                        backgroundColor: 'rgba(245, 158, 11, 0.45)', // Yellow
+                        borderColor: 'rgba(245, 158, 11, 1)',
+                        borderWidth: 1.5,
+                        borderRadius: 5
+                    },
+                    {
+                        label: 'Empatia e Diálogo',
+                        data: avgRelacionamento,
+                        data: avgRelacionamento,
+                        backgroundColor: 'rgba(244, 63, 94, 0.45)', // Red
+                        borderColor: 'rgba(244, 63, 94, 1)',
+                        borderWidth: 1.5,
+                        borderRadius: 5
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: 'y', // Barra horizontal premium
+                scales: {
+                    x: {
+                        min: 1,
+                        max: 5,
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.05)'
+                        },
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.6)',
+                            font: {
+                                family: 'Plus Jakarta Sans',
+                                size: 10
+                            }
+                        }
+                    },
+                    y: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.85)',
+                            font: {
+                                family: 'Plus Jakarta Sans',
+                                size: 10,
+                                weight: 'bold'
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            color: 'rgba(255, 255, 255, 0.8)',
+                            font: {
+                                family: 'Plus Jakarta Sans',
+                                size: 10
+                            },
+                            padding: 10
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                        titleColor: '#ffffff',
+                        bodyColor: 'rgba(255, 255, 255, 0.8)',
+                        borderColor: 'rgba(255, 255, 255, 0.1)',
+                        borderWidth: 1,
+                        padding: 10,
+                        titleFont: {
+                            family: 'Plus Jakarta Sans',
+                            weight: 'bold'
+                        },
+                        bodyFont: {
+                            family: 'Plus Jakarta Sans'
+                        }
+                    }
+                }
+            }
+        });
+    })();
+    {% endif %}
+
+    // 2. Validador do Modal de Professor Individual
     const fraseEsperadaEl = document.getElementById('fraseEsperada');
     const inputEl = document.getElementById('fraseConfirmacaoInput');
     const btnEl = document.getElementById('btnConfirmarExclusao');
@@ -411,7 +560,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // 2. Validador do Modal de Turma Inteira
+    // 3. Validador do Modal de Turma Inteira
     const fraseEsperadaTurmaEl = document.getElementById('fraseEsperadaTurma');
     const inputTurmaEl = document.getElementById('fraseConfirmacaoTurmaInput');
     const btnTurmaEl = document.getElementById('btnConfirmarExclusaoTurma');

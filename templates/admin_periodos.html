@@ -124,6 +124,44 @@
     </div>
 </div>
 
+<div class="row g-4 mt-3 animate-fade-in delay-2">
+    <div class="col-12">
+        <div class="glass-card">
+            <h4 class="fw-bold mb-3 text-info"><i class="bi bi-safe2-fill me-2 text-info animate-pulse"></i>Backup e Restauração do Sistema</h4>
+            <p class="text-white-50 fs-7">Exporte uma cópia completa dos dados atuais ou restaure o sistema enviando um arquivo de banco de dados SQLite (`.db`).</p>
+            
+            <hr class="border-secondary border-opacity-25 my-4">
+            
+            <div class="row g-4">
+                <!-- Download Backup -->
+                <div class="col-md-6 border-end border-secondary border-opacity-15 pe-md-4">
+                    <h5 class="fw-bold mb-2 fs-6"><i class="bi bi-cloud-arrow-down-fill text-emerald me-2"></i>Exportar Banco de Dados</h5>
+                    <p class="text-white-50 fs-8 mb-4">Baixe o arquivo de banco de dados SQLite (`.db`) contendo todos os usuários, disciplinas, períodos cadastrados e avaliações. Ideal para backups de segurança periódicos.</p>
+                    <a href="{{ url_for('download_backup') }}" class="btn btn-sm btn-emerald px-4 py-2 mt-2">
+                        <i class="bi bi-download me-1"></i>Baixar Backup (.db)
+                    </a>
+                </div>
+                
+                <!-- Upload Backup -->
+                <div class="col-md-6 ps-md-4">
+                    <h5 class="fw-bold mb-2 fs-6 text-warning"><i class="bi bi-cloud-arrow-up-fill text-warning me-2"></i>Importar Banco de Dados (Restaurar)</h5>
+                    <p class="text-white-50 fs-8 mb-3">Selecione um arquivo de banco de dados SQLite (`.db` ou `.sqlite`) de backup. <strong>Atenção:</strong> Esta ação é irreversível e substituirá completamente todos os dados vigentes no sistema!</p>
+                    
+                    <form action="{{ url_for('upload_backup') }}" method="POST" enctype="multipart/form-data" class="mt-3">
+                        <div class="input-group input-group-sm mb-2">
+                            <input type="file" class="form-control glass-input" id="backup_file" name="backup_file" accept=".db,.sqlite,.sqlite3" required>
+                            <button class="btn btn-danger px-4" type="submit">
+                                <i class="bi bi-upload me-1"></i>Restaurar Banco
+                            </button>
+                        </div>
+                        <span class="fs-9 text-white-50"><i class="bi bi-info-circle me-1"></i>Apenas arquivos válidos gerados por este sistema serão aceitos.</span>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% for p in periodos %}
 <!-- MODAL: Zerar Período Letivo {{ p.ano }}.{{ p.bimestre }} -->
 <div class="modal fade" id="clearPeriodModal{{ p.id }}" tabindex="-1" aria-labelledby="clearPeriodModalLabel{{ p.id }}" aria-hidden="true">

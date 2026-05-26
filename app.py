@@ -209,11 +209,19 @@ def gerar_pdf_report(disciplina, periodo, metrics, comentarios):
     story.append(metadata_table)
     story.append(Spacer(1, 15))
     
+    # Table Header Style
+    header_style = ParagraphStyle(
+        'TableHeaderText',
+        parent=body_style,
+        fontName='Helvetica-Bold',
+        textColor=colors.white
+    )
+
     # Scores Section
     story.append(Paragraph("DESEMPENHO QUANTITATIVO", section_heading))
     
     scores_data = [
-        [Paragraph("<b>Critério de Avaliação</b>", body_style), Paragraph("<b>Média Ponderada (1 a 5)</b>", body_style), Paragraph("<b>Classificação</b>", body_style)]
+        [Paragraph("Critério de Avaliação", header_style), Paragraph("Média Ponderada (1 a 5)", header_style), Paragraph("Classificação", header_style)]
     ]
     
     criterios = [
@@ -222,11 +230,6 @@ def gerar_pdf_report(disciplina, periodo, metrics, comentarios):
         ("Cumprimento de Horário e Presença", metrics['avg_presenca']),
         ("Relacionamento e Diálogo com Estudantes", metrics['avg_relacionamento'])
     ]
-    
-    # Force text color of headers to white
-    scores_data[0][0].style.textColor = colors.white
-    scores_data[0][1].style.textColor = colors.white
-    scores_data[0][2].style.textColor = colors.white
     
     for name, score in criterios:
         if score >= 4.5:
@@ -257,12 +260,6 @@ def gerar_pdf_report(disciplina, periodo, metrics, comentarios):
     
     story.append(scores_table)
     story.append(Spacer(1, 15))
-    
-    # Reset text colors for styles
-    title_style.textColor = colors.HexColor('#0f172a')
-    scores_data[0][0].style.textColor = colors.HexColor('#1e293b')
-    scores_data[0][1].style.textColor = colors.HexColor('#1e293b')
-    scores_data[0][2].style.textColor = colors.HexColor('#1e293b')
     
     # Section: Positive Comments
     story.append(Paragraph("OPINIÕES DOS ESTUDANTES: ELOGIOS E PONTOS POSITIVOS", section_heading))
@@ -434,6 +431,7 @@ def dashboard_turma(nome_turma):
         )
     
     selected_disciplina = None
+    professores_stats = []
     
     if disciplina_id:
         selected_disciplina = conn.execute('''
@@ -492,6 +490,23 @@ def dashboard_turma(nome_turma):
             WHERE D.turma = ? AND A.periodo_id = ?
             ORDER BY A.id DESC
         ''', (nome_turma, selected_id)).fetchall()
+
+        # Estatísticas comparativas de todos os professores da turma no período
+        professores_stats = conn.execute('''
+            SELECT 
+                D.nome_professor,
+                D.nome_disciplina,
+                AVG(A.nota_conteudo) as avg_cont,
+                AVG(A.nota_didatica) as avg_did,
+                AVG(A.nota_presenca) as avg_pres,
+                AVG(A.nota_relacionamento) as avg_rel,
+                COUNT(A.id) as total_respostas
+            FROM Disciplina D
+            LEFT JOIN Avaliacao A ON D.id = A.disciplina_id AND A.periodo_id = ?
+            WHERE D.turma = ?
+            GROUP BY D.id
+            ORDER BY D.nome_professor
+        ''', (selected_id, nome_turma)).fetchall()
         
     metrics = {
         'avg_conteudo': ratings['avg_cont'] if ratings['avg_cont'] is not None else 0.0,
@@ -527,7 +542,8 @@ def dashboard_turma(nome_turma):
         metrics=metrics,
         comentarios=comentarios,
         frase_confirmacao=frase_confirmacao,
-        frase_confirmacao_turma=frase_confirmacao_turma
+        frase_confirmacao_turma=frase_confirmacao_turma,
+        professores_stats=professores_stats
     )
 
 # ROTA PÚBLICA: Responder Questionário de Avaliação Passo a Passo por Turma (Apenas Período Ativo)
@@ -910,6 +926,81 @@ def limpar_periodo(periodo_id):
     finally:
         conn.close()
         
+    return redirect(url_for('admin_periodos'))
+
+# ROTA: Baixar arquivo do banco de dados SQLite (Protegida)
+@app.route('/admin/backup/download')
+@login_required
+def download_backup():
+    try:
+        if not os.path.exists(DB_PATH):
+            flash('Erro: Banco de dados não localizado.', 'error')
+            return redirect(url_for('admin_periodos'))
+            
+        return send_file(
+            DB_PATH,
+            mimetype='application/x-sqlite3',
+            as_attachment=True,
+            download_name='database_backup.db'
+        )
+    except Exception as e:
+        flash(f'Erro ao tentar exportar o banco de dados: {e}', 'error')
+        return redirect(url_for('admin_periodos'))
+
+# ROTA: Fazer upload e substituir a base de dados SQLite (Protegida)
+@app.route('/admin/backup/upload', methods=['POST'])
+@login_required
+def upload_backup():
+    if 'backup_file' not in request.files:
+        flash('Nenhum arquivo enviado.', 'error')
+        return redirect(url_for('admin_periodos'))
+        
+    file = request.files['backup_file']
+    
+    if file.filename == '':
+        flash('Nenhum arquivo selecionado.', 'error')
+        return redirect(url_for('admin_periodos'))
+        
+    if file:
+        temp_path = DB_PATH + '.temp'
+        try:
+            # Salva o arquivo temporário
+            file.save(temp_path)
+            
+            # Valida se é um banco de dados SQLite válido abrindo uma conexão de teste
+            test_conn = sqlite3.connect(temp_path)
+            test_conn.execute("SELECT count(*) FROM Usuario")
+            test_conn.execute("SELECT count(*) FROM Disciplina")
+            test_conn.execute("SELECT count(*) FROM Periodo")
+            test_conn.execute("SELECT count(*) FROM Avaliacao")
+            test_conn.close()
+            
+            # Substitui o banco atual com segurança
+            if os.path.exists(DB_PATH):
+                emergency_backup = DB_PATH + '.bak'
+                if os.path.exists(emergency_backup):
+                    os.remove(emergency_backup)
+                os.rename(DB_PATH, emergency_backup)
+                
+            os.rename(temp_path, DB_PATH)
+            
+            # Se havia backup de emergência, remove agora que deu tudo certo
+            emergency_backup = DB_PATH + '.bak'
+            if os.path.exists(emergency_backup):
+                os.remove(emergency_backup)
+                
+            flash('Sucesso! O banco de dados foi restaurado e substituído com êxito.', 'success')
+        except Exception as e:
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
+            emergency_backup = DB_PATH + '.bak'
+            if os.path.exists(emergency_backup) and not os.path.exists(DB_PATH):
+                os.rename(emergency_backup, DB_PATH)
+            elif os.path.exists(emergency_backup):
+                os.remove(emergency_backup)
+                
+            flash(f'Erro: O arquivo enviado não é um banco de dados de avaliação válido. ({e})', 'error')
+            
     return redirect(url_for('admin_periodos'))
 
 if __name__ == '__main__':
