@@ -428,6 +428,10 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
+        // Ajusta dinamicamente a altura do contêiner do canvas para dar espaço generoso e confortável a todos os professores na tela
+        const calculatedHeight = Math.max(450, labels.length * 85);
+        canvasCtx.parentNode.style.height = calculatedHeight + 'px';
+
         new Chart(canvasCtx, {
             type: 'bar',
             data: {
